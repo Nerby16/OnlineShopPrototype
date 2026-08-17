@@ -74,12 +74,12 @@ export default function AdminOrderDetail({ orderId }: { orderId: number }) {
     }
   }
 
-  if (loading) return <main className="order-detail-loading admin"><a className="brand" href="/">LÚMINA</a><p>Abriendo el pedido en el estudio…</p></main>;
-  if (!user || !order) return <main className="order-detail-error"><a className="brand" href="/">LÚMINA</a><div><p className="eyebrow">Acceso administrativo</p><h1>No podemos abrir<br /><em>este pedido.</em></h1><p>{error}</p><a className="primary-link" href="/admin">Ir a administración <span>→</span></a></div></main>;
+  if (loading) return <main className="order-detail-loading admin"><a className="brand" href="/">PATA PAPAYA</a><p>Abriendo el pedido en la trastienda…</p></main>;
+  if (!user || !order) return <main className="order-detail-error"><a className="brand" href="/">PATA PAPAYA</a><div><p className="eyebrow">Acceso administrativo</p><h1>No podemos abrir<br /><em>este pedido.</em></h1><p>{error}</p><a className="primary-link" href="/admin">Ir a administración <span>→</span></a></div></main>;
 
   return (
     <main className="order-detail-page admin-order-detail-page">
-      <header className="account-header"><a className="brand" href="/">LÚMINA</a><nav><a href="/admin#pedidos">← Todos los pedidos</a><span>Sesión de {user.name}</span></nav></header>
+      <header className="account-header"><a className="brand" href="/">PATA PAPAYA</a><nav><a href="/admin#pedidos">← Todos los pedidos</a><span>Sesión de {user.name}</span></nav></header>
       <section className="order-detail-hero admin"><div><p className="eyebrow">Operaciones · Pedido #{order.id}</p><h1>Detalle<br /><em>del pedido.</em></h1></div><div><span>Estado actual</span><strong className={`status ${order.status}`}>{orderStatusLabels[order.status]}</strong><time>{new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(order.createdAt))}</time></div></section>
       <div className="order-detail-layout">
         <div className="order-detail-main">
@@ -90,7 +90,7 @@ export default function AdminOrderDetail({ orderId }: { orderId: number }) {
         </div>
         <aside className="order-detail-aside admin-controls">
           <section><p className="eyebrow">Cambiar estado</p><label className="field"><span>Estado del pedido</span><select value={order.status} onChange={(event) => updateStatus(event.target.value as OrderStatus)} disabled={saving}><option value="pending">Pendiente</option><option value="paid">Pagado / preparando</option><option value="shipped">Enviado</option><option value="cancelled">Cancelado</option></select></label><small>Al cancelar se repone el stock. Al reabrir se comprueba y descuenta de nuevo.</small></section>
-          <form onSubmit={saveTracking}><p className="eyebrow">Seguimiento</p><div className="form-grid"><label className="field field-wide"><span>Número de seguimiento</span><input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder={`LUM-${String(order.id).padStart(6, "0")}`} maxLength={80} /></label><label className="field field-wide"><span>URL del transportista (opcional)</span><input type="url" value={trackingUrl} onChange={(event) => setTrackingUrl(event.target.value)} placeholder="https://…" maxLength={600} /></label></div><button className="checkout-submit" type="submit" disabled={saving}>{saving ? "Guardando…" : "Guardar seguimiento"} <span>→</span></button><small>Al marcar como enviado se genera automáticamente una referencia si está vacía.</small></form>
+          <form onSubmit={saveTracking}><p className="eyebrow">Seguimiento</p><div className="form-grid"><label className="field field-wide"><span>Número de seguimiento</span><input value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} placeholder={`PAP-${String(order.id).padStart(6, "0")}`} maxLength={80} /></label><label className="field field-wide"><span>URL del transportista (opcional)</span><input type="url" value={trackingUrl} onChange={(event) => setTrackingUrl(event.target.value)} placeholder="https://…" maxLength={600} /></label></div><button className="checkout-submit" type="submit" disabled={saving}>{saving ? "Guardando…" : "Guardar seguimiento"} <span>→</span></button><small>Al marcar como enviado se genera automáticamente una referencia si está vacía.</small></form>
           <section className="order-totals"><div><span>Subtotal</span><strong>{money.format(order.subtotal)}</strong></div><div><span>Envío</span><strong>{order.shipping ? money.format(order.shipping) : "Gratis"}</strong></div><div><span>Total</span><strong>{money.format(order.total)}</strong></div></section>
         </aside>
       </div>

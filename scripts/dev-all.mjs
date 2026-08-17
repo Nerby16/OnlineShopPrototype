@@ -17,7 +17,7 @@ const commands = [
   },
 ];
 
-console.log(`Usando ${process.version}. Iniciando Lúmina…`);
+console.log(`Usando ${process.version}. Iniciando Pata Papaya…`);
 
 const children = commands.map(({ name, args }) => {
   const child = spawn(process.execPath, args, {

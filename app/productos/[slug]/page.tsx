@@ -13,15 +13,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   if (!product) {
     return {
-      title: "Producto no encontrado — Lúmina",
-      description: "Esta pieza ya no está disponible.",
-      openGraph: { title: "Producto no encontrado — Lúmina", description: "Esta pieza ya no está disponible.", images: [] },
-      twitter: { title: "Producto no encontrado — Lúmina", description: "Esta pieza ya no está disponible.", images: [] },
+      title: "Producto no encontrado — Pata Papaya",
+      description: "Este juguete ya no está disponible.",
+      openGraph: { title: "Producto no encontrado — Pata Papaya", description: "Este juguete ya no está disponible.", images: [] },
+      twitter: { title: "Producto no encontrado — Pata Papaya", description: "Este juguete ya no está disponible.", images: [] },
     };
   }
 
   const baseUrl = await getRequestBaseUrl();
-  const title = `${product.name} — Lúmina`;
+  const title = `${product.name} — Pata Papaya`;
   const description = product.description;
 
   return {

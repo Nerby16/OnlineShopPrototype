@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import AccountArea from "./account";
 
 export const metadata: Metadata = {
-  title: "Mi cuenta — Lúmina",
-  description: "Consulta tus pedidos y el estado de cada envío en Lúmina.",
+  title: "Mi cuenta — Pata Papaya",
+  description: "Consulta tus pedidos y el estado de cada envío en Pata Papaya.",
   robots: { index: false, follow: false },
 };
 

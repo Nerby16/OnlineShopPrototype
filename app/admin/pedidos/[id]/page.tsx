@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminOrderDetail from "./admin-order-detail";
 
 export const metadata: Metadata = {
-  title: "Pedido — Administración de Lúmina",
+  title: "Pedido — Administración de Pata Papaya",
   description: "Gestiona el estado, la entrega y el seguimiento del pedido.",
   robots: { index: false, follow: false },
 };
@@ -13,4 +13,3 @@ export default async function AdminOrderPage({ params }: AdminOrderPageProps) {
   const { id } = await params;
   return <AdminOrderDetail orderId={Number(id)} />;
 }
-

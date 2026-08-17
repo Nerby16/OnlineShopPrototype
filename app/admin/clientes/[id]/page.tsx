@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminCustomerDetail from "./admin-customer-detail";
 
 export const metadata: Metadata = {
-  title: "Cliente — Administración de Lúmina",
+  title: "Cliente — Administración de Pata Papaya",
   description: "Consulta la actividad, los pedidos y el estado de una cuenta de cliente.",
   robots: { index: false, follow: false },
 };

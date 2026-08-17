@@ -23,7 +23,7 @@ async function render(pathname = "/") {
   );
 }
 
-test("server-renders the Lúmina storefront and social metadata", async () => {
+test("server-renders the Pata Papaya storefront and social metadata", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -34,29 +34,29 @@ test("server-renders the Lúmina storefront and social metadata", async () => {
 
   const html = await response.text();
   assert.match(html, /<html lang="es">/i);
-  assert.match(html, /<title>Lúmina — Objetos con carácter<\/title>/i);
-  assert.match(html, /Objetos que <em>cambian<\/em> el ritmo\./i);
-  assert.match(html, /Sillón Lino 01/);
-  assert.match(html, /Cerámica Aura/);
-  assert.match(html, /Bolso Senda/);
-  assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og\.png"/i);
+  assert.match(html, /<title>Pata Papaya — Juguetes tropicales para patas felices<\/title>/i);
+  assert.match(html, /Más <em>juego\.<\/em><br\/>Menos sofás mordidos\./i);
+  assert.match(html, /Frisbee Guayaba/);
+  assert.match(html, /Caña Tucán/);
+  assert.match(html, /Pelota Coco Loco/);
+  assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og-pata-papaya\.png"/i);
   assert.match(html, /name="twitter:card" content="summary_large_image"/i);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/i);
 });
 
 test("renders product records with route-specific social metadata", async () => {
   for (const product of [
-    { slug: "sillon-lino-01", name: "Sillón Lino 01", imageId: "photo-1503602642458-232111445657" },
-    { slug: "reloj-nodo", name: "Reloj Nodo", imageId: "photo-1524592094714-0f0654e20314" },
+    { slug: "frisbee-guayaba", name: "Frisbee Guayaba", imageId: "photo-1604182965221-88b1bc9897ed" },
+    { slug: "raton-maracuya", name: "Ratón Maracuyá", imageId: "photo-1708979346051-e809d2059b32" },
   ]) {
     const response = await render(`/productos/${product.slug}`);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, new RegExp(`<title>${product.name} — Lúmina<\\/title>`));
-    assert.match(html, new RegExp(`property="og:title" content="${product.name} — Lúmina"`));
+    assert.match(html, new RegExp(`<title>${product.name} — Pata Papaya<\\/title>`));
+    assert.match(html, new RegExp(`property="og:title" content="${product.name} — Pata Papaya"`));
     assert.match(html, new RegExp(`property="og:image" content="[^"]*${product.imageId}`));
-    assert.match(html, new RegExp(`name="twitter:title" content="${product.name} — Lúmina"`));
-    assert.doesNotMatch(html, /property="og:image" content="[^"]*\/og\.png"/i);
+    assert.match(html, new RegExp(`name="twitter:title" content="${product.name} — Pata Papaya"`));
+    assert.doesNotMatch(html, /property="og:image" content="[^"]*\/og-pata-papaya\.png"/i);
   }
 });
 
@@ -83,17 +83,17 @@ test("renders checkout, customer account and protected administration surfaces",
     adminOrderResponse.text(),
     adminCustomerResponse.text(),
   ]);
-  assert.match(checkoutHtml, /<title>Finalizar compra — Lúmina<\/title>/i);
+  assert.match(checkoutHtml, /<title>Finalizar compra — Pata Papaya<\/title>/i);
   assert.match(checkoutHtml, /Checkout seguro/);
-  assert.match(accountHtml, /<title>Mi cuenta — Lúmina<\/title>/i);
+  assert.match(accountHtml, /<title>Mi cuenta — Pata Papaya<\/title>/i);
   assert.match(accountHtml, /Preparando tu espacio personal/);
-  assert.match(adminHtml, /<title>Estudio — Administración de Lúmina<\/title>/i);
+  assert.match(adminHtml, /<title>Administración — Pata Papaya<\/title>/i);
   assert.match(adminHtml, /Acceso de administración/);
-  assert.match(customerOrderHtml, /<title>Detalle del pedido — Lúmina<\/title>/i);
+  assert.match(customerOrderHtml, /<title>Detalle del pedido — Pata Papaya<\/title>/i);
   assert.match(customerOrderHtml, /Preparando los detalles del pedido/);
-  assert.match(adminOrderHtml, /<title>Pedido — Administración de Lúmina<\/title>/i);
-  assert.match(adminOrderHtml, /Abriendo el pedido en el estudio/);
-  assert.match(adminCustomerHtml, /<title>Cliente — Administración de Lúmina<\/title>/i);
+  assert.match(adminOrderHtml, /<title>Pedido — Administración de Pata Papaya<\/title>/i);
+  assert.match(adminOrderHtml, /Abriendo el pedido en la trastienda/);
+  assert.match(adminCustomerHtml, /<title>Cliente — Administración de Pata Papaya<\/title>/i);
   assert.match(adminCustomerHtml, /Preparando la ficha del cliente/);
 });
 
@@ -103,7 +103,7 @@ test("includes the local MySQL data layer and seeded schema", async () => {
     readFile(new URL("../server/index.mjs", import.meta.url), "utf8"),
     readFile(new URL("../server/auth.mjs", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
-    stat(new URL("../public/og.png", import.meta.url)),
+    stat(new URL("../public/og-pata-papaya.png", import.meta.url)),
     readFile(new URL("../app/admin/admin-dashboard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/cuenta/account.tsx", import.meta.url), "utf8"),
   ]);
@@ -122,10 +122,13 @@ test("includes the local MySQL data layer and seeded schema", async () => {
   assert.match(schema, /customer_phone VARCHAR\(30\)/i);
   assert.match(schema, /shipped_at TIMESTAMP NULL/i);
   assert.match(schema, /INSERT INTO products/i);
+  assert.match(schema, /Frisbee Guayaba/i);
+  assert.match(schema, /Túnel Monstera/i);
   assert.match(server, /from "mysql2\/promise"/);
   assert.match(server, /url\.pathname === "\/api\/products"/);
   assert.match(server, /url\.pathname === "\/api\/orders"/);
   assert.match(server, /beginTransaction\(\)/);
+  assert.match(server, /subtotal >= 45/);
   assert.match(server, /FOR UPDATE/);
   assert.match(server, /\/api\/auth\/register/);
   assert.match(server, /\/api\/auth\/login/);

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import AdminDashboard from "./admin-dashboard";
 
 export const metadata: Metadata = {
-  title: "Estudio — Administración de Lúmina",
-  description: "Panel local para gestionar el catálogo y los pedidos de Lúmina.",
+  title: "Administración — Pata Papaya",
+  description: "Panel local para gestionar el catálogo, los pedidos y los clientes de Pata Papaya.",
   robots: { index: false, follow: false },
 };
 

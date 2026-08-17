@@ -118,12 +118,12 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 INSERT INTO products (name, slug, category, description, price, stock, image_url, featured)
 VALUES
-  ('Sillón Lino 01', 'sillon-lino-01', 'Casa', 'Roble macizo y lino lavado en un asiento de líneas tranquilas.', 289.00, 8, 'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Cerámica Aura', 'ceramica-aura', 'Casa', 'Pieza torneada a mano con un esmalte mate de tacto mineral.', 49.00, 16, 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Bolso Senda', 'bolso-senda', 'Accesorios', 'Lona resistente y piel vegetal para acompañarte cada día.', 119.00, 11, 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Reloj Nodo', 'reloj-nodo', 'Accesorios', 'Esfera limpia, caja de acero y correa de piel curtida.', 149.00, 6, 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85', 0),
-  ('Zapatilla Alba', 'zapatilla-alba', 'Accesorios', 'Una silueta ligera en piel suave y suela de caucho natural.', 94.00, 14, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=85', 0),
-  ('Lámpara Orbital', 'lampara-orbital', 'Casa', 'Luz cálida y volumen escultórico para espacios serenos.', 179.00, 5, 'https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=85', 0)
+  ('Frisbee Guayaba', 'frisbee-guayaba', 'Perros', 'Disco flexible y ligero para vuelos largos, saltos épicos y aterrizajes suaves.', 16.00, 24, 'https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Caña Tucán', 'cana-tucan', 'Gatos', 'Plumas, cintas y movimiento impredecible para despertar al cazador de salón.', 14.00, 18, 'https://images.unsplash.com/photo-1611279976163-acf6a363e73a?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Pelota Coco Loco', 'pelota-coco-loco', 'Perros', 'Rebote irregular, textura resistente y el tamaño perfecto para perseguir sin descanso.', 12.00, 30, 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Ratón Maracuyá', 'raton-maracuya', 'Gatos', 'Peluche ligero con cascabel suave para carreras nocturnas y emboscadas felinas.', 9.00, 26, 'https://images.unsplash.com/photo-1708979346051-e809d2059b32?auto=format&fit=crop&w=1000&q=85', 0),
+  ('Mordedor Piña Pop', 'mordedor-pina-pop', 'Perros', 'Relieves que masajean las encías y caucho natural preparado para mandíbulas curiosas.', 18.00, 20, 'https://images.unsplash.com/photo-1560160951-fc67dc9fd4f3?auto=format&fit=crop&w=1000&q=85', 0),
+  ('Túnel Monstera', 'tunel-monstera', 'Gatos', 'Refugio plegable con ventanas para acechar, esconderse y aparecer por sorpresa.', 29.00, 12, 'https://images.unsplash.com/photo-1529778873920-4da4926a72c2?auto=format&fit=crop&w=1000&q=85', 0)
 ON DUPLICATE KEY UPDATE
   name = VALUES(name),
   category = VALUES(category),

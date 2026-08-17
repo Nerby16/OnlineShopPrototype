@@ -59,7 +59,7 @@ function validateProductImageUrl(value) {
     if ((url.protocol !== "https:" && !isLocalUpload) || url.username || url.password) throw new Error();
     return url.href;
   } catch {
-    throw httpError(400, "La imagen debe usar HTTPS o proceder de las cargas locales de Lúmina.");
+    throw httpError(400, "La imagen debe usar HTTPS o proceder de las cargas locales de Pata Papaya.");
   }
 }
 
@@ -433,7 +433,7 @@ async function ensureAdminUser() {
 
   await pool.execute(`
     INSERT INTO users (email, name, password_hash, role)
-    VALUES (?, 'Lúmina Estudio', ?, 'admin')
+    VALUES (?, 'Pata Papaya Admin', ?, 'admin')
   `, [adminEmail, await hashPassword(adminPassword)]);
   console.log(`Cuenta administrativa preparada para ${adminEmail}`);
 }
@@ -496,7 +496,7 @@ async function createOrder(payload, sessionUser = null) {
     }
 
     const subtotal = resolved.reduce((sum, { product, quantity }) => sum + Number(product.price) * quantity, 0);
-    const shipping = subtotal >= 80 ? 0 : 6.9;
+    const shipping = subtotal >= 45 ? 0 : 6.9;
     const total = subtotal + shipping;
     const shippingAddress = JSON.stringify({ address, city, postalCode });
 
@@ -711,7 +711,7 @@ async function setOrderStatus(orderId, nextStatus, options = {}) {
           shipped_at = COALESCE(shipped_at, CURRENT_TIMESTAMP), cancelled_at = NULL,
           tracking_number = COALESCE(tracking_number, ?)
         WHERE id = ?
-      `, [`LUM-${String(orderId).padStart(6, "0")}`, orderId]);
+      `, [`PAP-${String(orderId).padStart(6, "0")}`, orderId]);
     } else {
       await connection.execute(`
         UPDATE orders SET status = 'cancelled', cancelled_at = COALESCE(cancelled_at, CURRENT_TIMESTAMP)
@@ -781,7 +781,7 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname === "/api/health") {
       await pool.query("SELECT 1");
-      sendJson(response, 200, { database: "connected", service: "lumina-api" });
+      sendJson(response, 200, { database: "connected", service: "pata-papaya-api" });
       return;
     }
 
@@ -1412,7 +1412,7 @@ const server = createServer(async (request, response) => {
 async function start() {
   await ensureAdminUser();
   server.listen(port, "127.0.0.1", () => {
-    console.log(`Lúmina API disponible en http://127.0.0.1:${port}`);
+    console.log(`Pata Papaya API disponible en http://127.0.0.1:${port}`);
   });
 }
 
@@ -1425,6 +1425,6 @@ process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
 start().catch((error) => {
-  console.error("No se pudo iniciar Lúmina API:", error.message);
+  console.error("No se pudo iniciar Pata Papaya API:", error.message);
   process.exitCode = 1;
 });

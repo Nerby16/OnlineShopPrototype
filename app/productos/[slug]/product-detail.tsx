@@ -31,27 +31,27 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
 
   return (
     <main className="product-page">
-      <div className="announcement">Envíos gratis desde 80 € <span>·</span> Cambios durante 30 días</div>
+      <div className="announcement">Envío gratis desde 45 € <span>·</span> Juegos aprobados por patas exigentes</div>
       <header className="detail-header">
-        <a className="brand" href="/">LÚMINA</a>
+        <a className="brand" href="/">PATA PAPAYA</a>
         <a href="/#coleccion">← Volver al catálogo</a>
         <a href="/checkout">Cesta y checkout</a>
       </header>
 
       <section className="product-detail">
         <div className="product-detail-image">
-          {product.featured && <span className="product-badge">Edición destacada</span>}
+          {product.featured && <span className="product-badge">Favorito de la manada</span>}
           <img src={product.image} alt={product.name} />
         </div>
         <div className="product-detail-copy">
-          <p className="eyebrow">{product.category} · Colección 01</p>
+          <p className="eyebrow">{product.category} · Juguetería tropical</p>
           <h1>{product.name}</h1>
           <strong className="detail-price">{money.format(product.price)}</strong>
           <p className="detail-description">{product.description}</p>
 
           <dl className="detail-facts">
             <div><dt>Entrega</dt><dd>2–4 días laborables</dd></div>
-            <div><dt>Origen</dt><dd>Producción europea</dd></div>
+            <div><dt>Selección</dt><dd>Elegido para jugar y compartir</dd></div>
             <div><dt>Disponibilidad</dt><dd>{product.stock > 0 ? `${product.stock} unidades` : "Agotado"}</dd></div>
           </dl>
 
@@ -71,7 +71,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
 
       {related.length > 0 && (
         <section className="related-products">
-          <div className="section-heading"><div><p className="eyebrow">Sigue explorando</p><h2>Piezas relacionadas</h2></div></div>
+          <div className="section-heading"><div><p className="eyebrow">Que siga la fiesta</p><h2>Más juguetes</h2></div></div>
           <div className="product-grid">
             {related.map((item) => (
               <a className="product-card" href={`/productos/${item.slug}`} key={item.id}>

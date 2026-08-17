@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CustomerOrderDetail from "./customer-order-detail";
 
 export const metadata: Metadata = {
-  title: "Detalle del pedido — Lúmina",
+  title: "Detalle del pedido — Pata Papaya",
   description: "Consulta el contenido, la entrega y el seguimiento de tu pedido.",
   robots: { index: false, follow: false },
 };
@@ -13,4 +13,3 @@ export default async function CustomerOrderPage({ params }: OrderPageProps) {
   const { id } = await params;
   return <CustomerOrderDetail orderId={Number(id)} />;
 }
-

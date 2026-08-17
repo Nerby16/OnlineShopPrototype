@@ -19,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
   const configuredOrigin = String(process.env.SITE_PUBLIC_ORIGIN ?? "").trim();
   const baseUrl = configuredOrigin ? new URL(configuredOrigin).origin : `${protocol}://${host}`;
-  const title = "Lúmina — Objetos con carácter";
-  const description = "Tienda de diseño sereno para la casa y para cada día.";
+  const title = "Pata Papaya — Juguetes tropicales para patas felices";
+  const description = "Juguetes tropicales para perros y gatos con muchas ganas de jugar.";
 
   return {
     metadataBase: new URL(baseUrl),
@@ -35,13 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       type: "website",
       url: baseUrl,
-      images: [{ url: `${baseUrl}/og.png`, width: 1736, height: 909, alt: "Lúmina — Objetos que cambian el ritmo" }],
+      images: [{ url: `${baseUrl}/og-pata-papaya.png`, width: 1736, height: 909, alt: "Pata Papaya — Juguetes tropicales para patas felices" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`${baseUrl}/og.png`],
+      images: [`${baseUrl}/og-pata-papaya.png`],
     },
   };
 }

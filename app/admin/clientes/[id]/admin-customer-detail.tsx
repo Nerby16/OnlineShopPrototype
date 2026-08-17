@@ -137,15 +137,15 @@ export default function AdminCustomerDetail({ customerId }: { customerId: number
 
   function resetFilters() { setSearch(""); setStatus(""); setDateFrom(""); setDateTo(""); setPage(1); }
 
-  if (loading) return <main className="order-detail-loading admin"><a className="brand" href="/">LÚMINA</a><p>Preparando la ficha del cliente…</p></main>;
-  if (!user || !customer) return <main className="order-detail-error"><a className="brand" href="/">LÚMINA</a><div><p className="eyebrow">Acceso administrativo</p><h1>No podemos abrir<br /><em>este cliente.</em></h1><p>{error}</p><a className="primary-link" href="/admin#clientes">Volver a clientes <span>→</span></a></div></main>;
+  if (loading) return <main className="order-detail-loading admin"><a className="brand" href="/">PATA PAPAYA</a><p>Preparando la ficha del cliente…</p></main>;
+  if (!user || !customer) return <main className="order-detail-error"><a className="brand" href="/">PATA PAPAYA</a><div><p className="eyebrow">Acceso administrativo</p><h1>No podemos abrir<br /><em>este cliente.</em></h1><p>{error}</p><a className="primary-link" href="/admin#clientes">Volver a clientes <span>→</span></a></div></main>;
 
   const first = pagination.total ? (pagination.page - 1) * pagination.pageSize + 1 : 0;
   const last = Math.min(pagination.total, pagination.page * pagination.pageSize);
 
   return (
     <main className="order-detail-page admin-customer-detail-page">
-      <header className="account-header"><a className="brand" href="/">LÚMINA</a><nav><a href="/admin#clientes">← Todos los clientes</a><span>Sesión de {user.name}</span></nav></header>
+      <header className="account-header"><a className="brand" href="/">PATA PAPAYA</a><nav><a href="/admin#clientes">← Todos los clientes</a><span>Sesión de {user.name}</span></nav></header>
       <section className="order-detail-hero admin"><div><p className="eyebrow">Comunidad · Cliente #{customer.id}</p><h1>Ficha<br /><em>del cliente.</em></h1></div><div><span>Estado de la cuenta</span><strong className={`status ${customer.active ? "paid" : "cancelled"}`}>{customer.active ? "Activa" : "Bloqueada"}</strong><time>Alta · {dateFormatter.format(new Date(customer.createdAt))}</time></div></section>
       <div className="customer-detail-content">
         {error && <p className="admin-message error" role="alert">{error}</p>}{notice && <p className="admin-message" role="status">{notice}</p>}

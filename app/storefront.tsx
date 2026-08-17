@@ -72,7 +72,7 @@ export default function Storefront() {
   });
   const cartCount = cart.reduce((sum, line) => sum + line.quantity, 0);
   const cartTotal = cartLines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
-  const shippingLeft = Math.max(0, 80 - cartTotal);
+  const shippingLeft = Math.max(0, 45 - cartTotal);
 
   function addToCart(product: Product) {
     setCart((current) => {
@@ -112,20 +112,20 @@ export default function Storefront() {
   function subscribe(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     event.currentTarget.reset();
-    setNotice("¡Gracias! Ya formas parte de Lúmina");
+    setNotice("¡Ya formas parte de la manada!");
   }
 
   return (
-    <main>
-      <div className="announcement">Envíos gratis desde 80 € <span>·</span> Cambios durante 30 días</div>
+    <main className="storefront">
+      <div className="announcement">Envío gratis desde 45 € <span>●</span> Juegos aprobados por patas exigentes</div>
 
       <header className="site-header">
-        <a className="brand" href="#inicio" aria-label="Lúmina, inicio">LÚMINA</a>
+        <a className="brand" href="#inicio" aria-label="Pata Papaya, inicio">PATA PAPAYA</a>
         <nav aria-label="Navegación principal">
-          <a href="#coleccion">Novedades</a>
-          <a href="#coleccion" onClick={() => setCategory("Casa")}>Casa</a>
-          <a href="#coleccion" onClick={() => setCategory("Accesorios")}>Accesorios</a>
-          <a href="#historia">Nuestra historia</a>
+          <a href="#coleccion">Juguetes</a>
+          <a href="#coleccion" onClick={() => setCategory("Perros")}>Perros</a>
+          <a href="#coleccion" onClick={() => setCategory("Gatos")}>Gatos</a>
+          <a href="#historia">Nuestra manada</a>
         </nav>
         <div className="header-actions">
           <a href="/cuenta">Mi cuenta</a>
@@ -138,31 +138,31 @@ export default function Storefront() {
 
       <section className="hero" id="inicio">
         <div className="hero-copy">
-          <p className="eyebrow">Colección 01 · Hecho para durar</p>
-          <h1>Objetos que <em>cambian</em> el ritmo.</h1>
-          <p className="hero-description">Una selección de piezas honestas para vestir tu casa y acompañar tus días. Diseño sereno, materiales con carácter.</p>
-          <a className="primary-link" href="#coleccion">Explorar la colección <span aria-hidden="true">↗</span></a>
+          <p className="eyebrow">Juguetes tropicales · Diversión responsable</p>
+          <h1>Más <em>juego.</em><br />Menos sofás mordidos.</h1>
+          <p className="hero-description">Color, movimiento y juguetes con mucha selva para perros y gatos que se toman la diversión muy en serio.</p>
+          <a className="primary-link" href="#coleccion">Soltar la diversión <span aria-hidden="true">↗</span></a>
         </div>
         <div className="hero-visual">
-          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=90" alt="Salón contemporáneo en tonos cálidos" />
-          <div className="hero-tag"><span>Nueva edición</span><strong>Formas esenciales</strong></div>
+          <img src="https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1600&q=90" alt="Perro saltando para atrapar un frisbee amarillo" />
+          <div className="hero-tag"><span>Favorito de la manada</span><strong>Frisbee Guayaba</strong></div>
         </div>
       </section>
 
       <section className="collection" id="coleccion">
         <div className="section-heading">
-          <div><p className="eyebrow">Selección de la semana</p><h2>Recién llegados</h2></div>
-          <span className="result-count">{visibleProducts.length} piezas</span>
+          <div><p className="eyebrow">La juguetería feliz</p><h2>Para mover la cola</h2></div>
+          <span className="result-count">{visibleProducts.length} aventuras</span>
         </div>
 
         <div className="catalog-tools" aria-label="Filtros del catálogo">
           <div className="category-tabs">
-            {["Todo", "Casa", "Accesorios"].map((item) => (
+            {["Todo", "Perros", "Gatos"].map((item) => (
               <button className={category === item ? "active" : ""} type="button" key={item} onClick={() => setCategory(item)}>{item}</button>
             ))}
           </div>
           <button className="inline-search" type="button" onClick={() => setSearchOpen(true)}>
-            {search ? `Buscando “${search}”` : "Buscar en la colección"} <span aria-hidden="true">⌕</span>
+            {search ? `Buscando “${search}”` : "Buscar el próximo favorito"} <span aria-hidden="true">⌕</span>
           </button>
         </div>
 
@@ -171,7 +171,7 @@ export default function Storefront() {
             {visibleProducts.map((product) => (
               <article className="product-card" key={product.id}>
                 <div className="product-image">
-                  {product.featured && <span className="product-badge">Nuevo</span>}
+                  {product.featured && <span className="product-badge">Top patitas</span>}
                   <a className="product-image-link" href={`/productos/${product.slug}`} aria-label={`Ver ${product.name}`}>
                     <img src={product.image} alt={product.name} />
                   </a>
@@ -186,39 +186,39 @@ export default function Storefront() {
             ))}
           </div>
         ) : (
-          <div className="empty-results"><span>Sin coincidencias</span><h3>Probemos otra búsqueda.</h3><button type="button" onClick={() => { setSearch(""); setCategory("Todo"); }}>Ver todas las piezas</button></div>
+          <div className="empty-results"><span>Ese juguete se ha escondido</span><h3>Probemos otra búsqueda.</h3><button type="button" onClick={() => { setSearch(""); setCategory("Todo"); }}>Ver todos los juguetes</button></div>
         )}
       </section>
 
       <section className="manifesto" id="historia">
         <div className="manifesto-image">
-          <img src="https://images.unsplash.com/photo-1615529182904-14819c35db37?auto=format&fit=crop&w=1400&q=85" alt="Interior de un taller de diseño" />
-          <span>Madrid · Desde 2024</span>
+          <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&q=85" alt="Dos perros corriendo juntos al aire libre" />
+          <span>Madrid · Manada desde 2024</span>
         </div>
         <div className="manifesto-copy">
-          <p className="eyebrow">Nuestra forma de hacer</p>
-          <h2>Menos ruido.<br /><em>Más intención.</em></h2>
-          <p>Elegimos objetos que envejecen bien, creados en series pequeñas por estudios y talleres independientes. Queremos que cada pieza se sienta propia desde el primer día.</p>
-          <div className="manifesto-stats"><div><strong>24</strong><span>Talleres colaboradores</span></div><div><strong>92%</strong><span>Materiales de origen europeo</span></div></div>
+          <p className="eyebrow">Nuestro manifiesto animal</p>
+          <h2>Jugar también<br /><em>es cuidar.</em></h2>
+          <p>Elegimos juguetes que despiertan instintos, gastan energía y fortalecen vínculos. Más carreras por el pasillo, más siestas felices y menos aburrimiento.</p>
+          <div className="manifesto-stats"><div><strong>0%</strong><span>Aburrimiento permitido</span></div><div><strong>100%</strong><span>Colas en movimiento</span></div></div>
         </div>
       </section>
 
       <section className="newsletter">
-        <p className="eyebrow">Cartas desde el estudio</p>
-        <h2>Ideas para vivir<br /><em>un poco mejor.</em></h2>
+        <p className="eyebrow">Correo que da la patita</p>
+        <h2>Novedades con<br /><em>mucho olfato.</em></h2>
         <form onSubmit={subscribe}>
           <label className="sr-only" htmlFor="newsletter-email">Tu correo electrónico</label>
           <input id="newsletter-email" type="email" placeholder="tu@email.com" required />
           <button type="submit">Apuntarme <span aria-hidden="true">→</span></button>
         </form>
-        <small>Sin ruido. Un correo al mes y puedes irte cuando quieras.</small>
+        <small>Un correo al mes. Sin spam, salvo que tu perro aprenda a escribir.</small>
       </section>
 
       <footer>
-        <a className="footer-brand" href="#inicio">LÚMINA</a>
-        <p>Objetos con carácter para días con calma.</p>
-        <div className="footer-links"><a href="#coleccion">Catálogo</a><a href="#historia">Estudio</a><a href="/cuenta">Mi cuenta</a><a href="/admin">Administración</a><a href="mailto:hola@lumina.local">Contacto</a></div>
-        <div className="footer-legal"><span>© 2026 Lúmina Estudio</span><span>Prototipo de tienda online</span></div>
+        <a className="footer-brand" href="#inicio">PATA PAPAYA</a>
+        <p>Juguetes tropicales para animales con personalidad.</p>
+        <div className="footer-links"><a href="#coleccion">Juguetes</a><a href="#historia">La manada</a><a href="/cuenta">Mi cuenta</a><a href="/admin">Administración</a><a href="mailto:hola@patapapaya.local">Contacto</a></div>
+        <div className="footer-legal"><span>© 2026 Pata Papaya</span><span>Prototipo de tienda online</span></div>
       </footer>
 
       {searchOpen && (
@@ -229,7 +229,7 @@ export default function Storefront() {
             <p className="eyebrow">¿Qué estás buscando?</p>
             <label className="sr-only" htmlFor="store-search">Buscar productos</label>
             <input id="store-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Escribe aquí…" />
-            <div className="search-suggestions"><span>Prueba con:</span>{["sillón", "cerámica", "accesorios"].map((term) => <button type="button" key={term} onClick={() => setSearch(term)}>{term}</button>)}</div>
+            <div className="search-suggestions"><span>Prueba con:</span>{["pelota", "mordedor", "gatos"].map((term) => <button type="button" key={term} onClick={() => setSearch(term)}>{term}</button>)}</div>
             <button className="search-submit" type="button" onClick={() => { setSearchOpen(false); document.getElementById("coleccion")?.scrollIntoView(); }}>Ver {visibleProducts.length} resultados <span>→</span></button>
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function Storefront() {
             <div className="drawer-header"><div><p className="eyebrow">Tu selección</p><h2>Cesta <span>({cartCount})</span></h2></div><button className="close-button" type="button" onClick={() => setCartOpen(false)} aria-label="Cerrar cesta">×</button></div>
             {cartLines.length ? (
               <>
-                <div className="shipping-note">{shippingLeft ? `Te faltan ${money.format(shippingLeft)} para el envío gratuito.` : "Tu envío es gratuito."}<div><span style={{ width: `${Math.min(100, (cartTotal / 80) * 100)}%` }} /></div></div>
+                <div className="shipping-note">{shippingLeft ? `Te faltan ${money.format(shippingLeft)} para el envío gratuito.` : "Tu envío es gratuito."}<div><span style={{ width: `${Math.min(100, (cartTotal / 45) * 100)}%` }} /></div></div>
                 <div className="cart-lines">
                   {cartLines.map(({ product, quantity }) => (
                     <article className="cart-line" key={product.id}>
@@ -254,7 +254,7 @@ export default function Storefront() {
                 <div className="cart-summary"><div><span>Subtotal</span><strong>{money.format(cartTotal)}</strong></div><small>Impuestos incluidos. Envío calculado al finalizar.</small><button type="button" onClick={() => { window.location.href = "/checkout"; }}>Finalizar compra <span>→</span></button></div>
               </>
             ) : (
-              <div className="empty-cart"><span>Tu cesta está esperando.</span><p>Explora la colección y guarda aquí tus piezas favoritas.</p><button type="button" onClick={() => setCartOpen(false)}>Seguir descubriendo</button></div>
+              <div className="empty-cart"><span>La cesta está de siesta.</span><p>Encuentra un juguete que haga mover esa cola.</p><button type="button" onClick={() => setCartOpen(false)}>Seguir olfateando</button></div>
             )}
           </aside>
         </div>
