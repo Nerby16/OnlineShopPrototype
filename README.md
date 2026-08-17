@@ -15,11 +15,11 @@ otros catálogos y modelos de tienda.
 
 ## Vista previa
 
-![Escaparate de Nexo Animal](docs/screenshots/storefront.png)
+![Escaparate de Nexo Animal](docs/screenshots/storefront.jpg)
 
 | Área de cliente | Administración |
 | --- | --- |
-| ![Cuenta de cliente](docs/screenshots/account.png) | ![Panel administrativo](docs/screenshots/admin.png) |
+| ![Cuenta de cliente](docs/screenshots/account.jpg) | ![Panel administrativo](docs/screenshots/admin.jpg) |
 
 ## Funcionalidades
 
