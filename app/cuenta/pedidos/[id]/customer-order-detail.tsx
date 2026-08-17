@@ -27,20 +27,20 @@ export default function CustomerOrderDetail({ orderId }: { orderId: number }) {
     return () => controller.abort();
   }, [apiFetch, invalidOrderId, orderId]);
 
-  if (loading) return <main className="order-detail-loading"><a className="brand" href="/">PATA PAPAYA</a><p>Preparando los detalles del pedido…</p></main>;
+  if (loading) return <main className="order-detail-loading"><a className="brand" href="/">NEXO ANIMAL</a><p>Preparando los detalles del pedido…</p></main>;
 
   if (!order) {
-    return <main className="order-detail-error"><a className="brand" href="/">PATA PAPAYA</a><div><p className="eyebrow">No hemos podido abrirlo</p><h1>Este pedido no está<br /><em>disponible.</em></h1><p>{error}</p><a className="primary-link" href="/cuenta">Volver a mi cuenta <span>→</span></a></div></main>;
+    return <main className="order-detail-error"><a className="brand" href="/">NEXO ANIMAL</a><div><p className="eyebrow">No hemos podido abrirlo</p><h1>Este pedido no está<br /><em>disponible.</em></h1><p>{error}</p><a className="primary-link" href="/cuenta">Volver a mi cuenta <span>→</span></a></div></main>;
   }
 
   return (
     <main className="order-detail-page">
-      <header className="account-header"><a className="brand" href="/">PATA PAPAYA</a><nav><a href="/cuenta">← Mis pedidos</a><a href="/">Tienda</a></nav></header>
+      <header className="account-header"><a className="brand" href="/">NEXO ANIMAL</a><nav><a href="/cuenta">← Mis pedidos</a><a href="/">Tienda</a></nav></header>
       <section className="order-detail-hero"><div><p className="eyebrow">Pedido #{order.id}</p><h1>Tu selección,<br /><em>paso a paso.</em></h1></div><div><span>Estado actual</span><strong className={`status ${order.status}`}>{orderStatusLabels[order.status]}</strong><time>{new Intl.DateTimeFormat("es-ES", { dateStyle: "long" }).format(new Date(order.createdAt))}</time></div></section>
       <div className="order-detail-layout">
         <div className="order-detail-main">
           <section className="order-detail-section"><div className="order-detail-heading"><p className="eyebrow">Seguimiento</p><h2>Recorrido del pedido</h2></div><OrderTimeline order={order} /></section>
-          <section className="order-detail-section"><div className="order-detail-heading"><p className="eyebrow">Contenido</p><h2>{order.items.reduce((sum, item) => sum + item.quantity, 0)} juguetes elegidos</h2></div><div className="order-detail-items">{order.items.map((item) => <article key={item.productId}><a href={`/productos/${item.productSlug}`}><img src={item.productImage} alt={item.productName} /></a><div><span>Producto</span><h3><a href={`/productos/${item.productSlug}`}>{item.productName}</a></h3><p>{item.quantity} × {money.format(item.unitPrice)}</p></div><strong>{money.format(item.unitPrice * item.quantity)}</strong></article>)}</div></section>
+          <section className="order-detail-section"><div className="order-detail-heading"><p className="eyebrow">Contenido</p><h2>{order.items.reduce((sum, item) => sum + item.quantity, 0)} productos seleccionados</h2></div><div className="order-detail-items">{order.items.map((item) => <article key={item.productId}><a href={`/productos/${item.productSlug}`}><img src={item.productImage} alt={item.productName} /></a><div><span>Producto</span><h3><a href={`/productos/${item.productSlug}`}>{item.productName}</a></h3><p>{item.quantity} × {money.format(item.unitPrice)}</p></div><strong>{money.format(item.unitPrice * item.quantity)}</strong></article>)}</div></section>
         </div>
         <aside className="order-detail-aside">
           <section><p className="eyebrow">Entrega</p><h2>{order.customerName}</h2><p>{order.shippingAddress.address}<br />{order.shippingAddress.postalCode} {order.shippingAddress.city}<br />{order.customerEmail}{order.customerPhone && <><br />{order.customerPhone}</>}</p></section>

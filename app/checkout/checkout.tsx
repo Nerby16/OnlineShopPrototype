@@ -123,10 +123,10 @@ export default function Checkout() {
   if (order) {
     return (
       <main className="checkout-page checkout-success">
-        <a className="brand" href="/">PATA PAPAYA</a>
+        <a className="brand" href="/">NEXO ANIMAL</a>
         <div className="success-mark">✓</div>
         <p className="eyebrow">Pedido confirmado</p>
-        <h1>¡Diversión<br /><em>en camino!</em></h1>
+        <h1>Tu pedido se ha<br /><em>confirmado.</em></h1>
         <p>Tu pedido <strong>#{order.id}</strong> se ha guardado correctamente por un total de <strong>{money.format(order.total)}</strong>.</p>
         <div className="success-actions"><a className="primary-link" href={order.linkedToAccount ? "/cuenta" : "/"}>{order.linkedToAccount ? "Ver en mis pedidos" : "Volver a la tienda"} <span>→</span></a>{order.linkedToAccount && <a href="/">Seguir comprando</a>}</div>
       </main>
@@ -136,7 +136,7 @@ export default function Checkout() {
   return (
     <main className="checkout-page">
       <header className="checkout-header">
-        <a className="brand" href="/">PATA PAPAYA</a>
+        <a className="brand" href="/">NEXO ANIMAL</a>
         <span>Checkout seguro · Sin pagos reales</span>
         <a href="/cuenta">Mi cuenta</a>
       </header>
@@ -146,14 +146,14 @@ export default function Checkout() {
       ) : lines.length === 0 ? (
         <div className="checkout-empty">
           <p className="eyebrow">Tu cesta está vacía</p>
-          <h1>Tu próxima aventura<br /><em>empieza aquí.</em></h1>
-          <a className="primary-link" href="/#coleccion">Explorar juguetes <span>→</span></a>
+          <h1>Aún no has añadido<br /><em>ningún producto.</em></h1>
+          <a className="primary-link" href="/#coleccion">Explorar catálogo <span>→</span></a>
         </div>
       ) : (
         <div className="checkout-layout">
           <form className="checkout-form" onSubmit={submitOrder}>
             <p className="eyebrow">01 · Datos de entrega</p>
-            <h1>¿Dónde enviamos<br /><em>la diversión?</em></h1>
+            <h1>¿Dónde enviamos<br /><em>tu pedido?</em></h1>
 
             <div className={`checkout-account-note ${account ? "signed-in" : ""}`}>
               <span>{account ? `Pedido asociado a ${account.email}` : "¿Quieres consultar este pedido más tarde?"}</span>
@@ -185,7 +185,7 @@ export default function Checkout() {
           </form>
 
           <aside className="order-review">
-            <div className="order-review-heading"><p className="eyebrow">02 · Resumen</p><span>{cart.reduce((sum, line) => sum + line.quantity, 0)} juguetes</span></div>
+            <div className="order-review-heading"><p className="eyebrow">02 · Resumen</p><span>{cart.reduce((sum, line) => sum + line.quantity, 0)} productos</span></div>
             <div className="review-lines">
               {lines.map(({ product, quantity }) => (
                 <article className="review-line" key={product.id}>

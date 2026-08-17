@@ -11,14 +11,14 @@ export default function OrderTimeline({ order }: { order: OrderDetail }) {
   const steps = [
     { label: "Recibido", detail: "Pedido registrado", date: order.createdAt },
     { label: "Confirmado", detail: "Selección confirmada", date: order.paidAt },
-    { label: "Preparando", detail: "En nuestra juguetería", date: order.paidAt },
+    { label: "Preparando", detail: "En nuestro almacén", date: order.paidAt },
     { label: "Enviado", detail: "En camino a tu dirección", date: order.shippedAt },
   ];
 
   return (
     <div>
       {order.status === "cancelled" && (
-        <div className="order-cancelled-note"><strong>Pedido cancelado</strong><span>{formatDate(order.cancelledAt)}</span><p>Los juguetes se devolvieron automáticamente al stock disponible.</p></div>
+        <div className="order-cancelled-note"><strong>Pedido cancelado</strong><span>{formatDate(order.cancelledAt)}</span><p>Los productos se devolvieron automáticamente al stock disponible.</p></div>
       )}
       <ol className={`order-timeline ${order.status === "cancelled" ? "cancelled" : ""}`} aria-label="Progreso del pedido">
         {steps.map((step, index) => {

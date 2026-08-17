@@ -1,6 +1,7 @@
-# Pata Papaya — prototipo de tienda online para mascotas
+# Nexo Animal — prototipo de comercio electrónico multiespecie
 
-Aplicación full-stack de una tienda de juguetes para mascotas en español. Incluye catálogo,
+Aplicación full-stack de una tienda para animales en español. Incluye un catálogo
+multiespecie pensado como base reutilizable para otros tipos de comercio,
 filtros, búsqueda, cesta persistente, diseño responsive y una API local
 conectada a MySQL.
 
@@ -45,6 +46,7 @@ Requisitos: Node.js 22 o superior y MySQL 8.
    mysql -u root -p < database/migrations/005_order_tracking.sql
    mysql -u root -p < database/migrations/006_customer_profiles.sql
    mysql -u root -p < database/migrations/007_pet_store_rebrand.sql
+   mysql -u root -p < database/migrations/008_nexo_animal_multispecies.sql
    ```
 
 3. Copia `.env.example` como `.env`, ajusta MySQL y configura

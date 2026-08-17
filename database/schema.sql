@@ -118,12 +118,12 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 INSERT INTO products (name, slug, category, description, price, stock, image_url, featured)
 VALUES
-  ('Frisbee Guayaba', 'frisbee-guayaba', 'Perros', 'Disco flexible y ligero para vuelos largos, saltos épicos y aterrizajes suaves.', 16.00, 24, 'https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Caña Tucán', 'cana-tucan', 'Gatos', 'Plumas, cintas y movimiento impredecible para despertar al cazador de salón.', 14.00, 18, 'https://images.unsplash.com/photo-1611279976163-acf6a363e73a?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Pelota Coco Loco', 'pelota-coco-loco', 'Perros', 'Rebote irregular, textura resistente y el tamaño perfecto para perseguir sin descanso.', 12.00, 30, 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&w=1000&q=85', 1),
-  ('Ratón Maracuyá', 'raton-maracuya', 'Gatos', 'Peluche ligero con cascabel suave para carreras nocturnas y emboscadas felinas.', 9.00, 26, 'https://images.unsplash.com/photo-1708979346051-e809d2059b32?auto=format&fit=crop&w=1000&q=85', 0),
-  ('Mordedor Piña Pop', 'mordedor-pina-pop', 'Perros', 'Relieves que masajean las encías y caucho natural preparado para mandíbulas curiosas.', 18.00, 20, 'https://images.unsplash.com/photo-1560160951-fc67dc9fd4f3?auto=format&fit=crop&w=1000&q=85', 0),
-  ('Túnel Monstera', 'tunel-monstera', 'Gatos', 'Refugio plegable con ventanas para acechar, esconderse y aparecer por sorpresa.', 29.00, 12, 'https://images.unsplash.com/photo-1529778873920-4da4926a72c2?auto=format&fit=crop&w=1000&q=85', 0)
+  ('Disco de entrenamiento Terra', 'disco-entrenamiento-terra', 'Perros', 'Disco flexible de alta visibilidad, diseñado para sesiones de juego y entrenamiento al aire libre.', 16.90, 24, 'https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Varita de juego Nilo', 'varita-juego-nilo', 'Gatos', 'Varita ligera con movimiento irregular para favorecer la actividad y la estimulación diaria.', 14.50, 18, 'https://images.unsplash.com/photo-1611279976163-acf6a363e73a?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Percha natural Olmo', 'percha-natural-olmo', 'Aves', 'Percha de madera natural con diámetro variable para favorecer el apoyo y el desgaste de las uñas.', 22.90, 30, 'https://images.unsplash.com/photo-1607798136809-1483b83f32fd?auto=format&fit=crop&w=1000&q=85', 1),
+  ('Túnel de heno Prado', 'tunel-heno-prado', 'Pequeños animales', 'Refugio de fibras vegetales para explorar, descansar y roer de forma segura.', 13.90, 26, 'https://images.unsplash.com/photo-1742094611825-4e4d6493fbfd?auto=format&fit=crop&w=1000&q=85', 0),
+  ('Filtro compacto Aqua 40', 'filtro-compacto-aqua-40', 'Acuario', 'Sistema de filtración silencioso para acuarios pequeños, con caudal regulable y mantenimiento sencillo.', 39.90, 20, 'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=1000&q=85', 0),
+  ('Refugio mineral Duna', 'refugio-mineral-duna', 'Terrario', 'Escondite estable de acabado mineral para crear una zona de descanso protegida en el terrario.', 27.90, 12, 'https://unsplash.com/photos/9CWKfMwIGfo/download?force=true&w=1000', 0)
 ON DUPLICATE KEY UPDATE
   name = VALUES(name),
   category = VALUES(category),

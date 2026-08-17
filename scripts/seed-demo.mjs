@@ -51,7 +51,7 @@ try {
   const demoOrders = [
     { status: "pending", createdAt: daysAgo(1), paidAt: null, shippedAt: null, tracking: null, items: [{ product: products[0], quantity: 1 }] },
     { status: "paid", createdAt: daysAgo(4), paidAt: daysAgo(3), shippedAt: null, tracking: null, items: [{ product: products[1], quantity: 2 }] },
-    { status: "shipped", createdAt: daysAgo(12), paidAt: daysAgo(11), shippedAt: daysAgo(9), tracking: "PAP-DEMO-2026", items: [{ product: products[2], quantity: 1 }, { product: products[3], quantity: 1 }] },
+    { status: "shipped", createdAt: daysAgo(12), paidAt: daysAgo(11), shippedAt: daysAgo(9), tracking: "NEX-DEMO-2026", items: [{ product: products[2], quantity: 1 }, { product: products[3], quantity: 1 }] },
   ].filter((order) => !existingStatuses.has(order.status));
 
   for (const demoOrder of demoOrders) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminOrderDetail from "./admin-order-detail";
 
 export const metadata: Metadata = {
-  title: "Pedido — Administración de Pata Papaya",
+  title: "Pedido — Administración de Nexo Animal",
   description: "Gestiona el estado, la entrega y el seguimiento del pedido.",
   robots: { index: false, follow: false },
 };

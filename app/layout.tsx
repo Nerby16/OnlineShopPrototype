@@ -19,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
   const configuredOrigin = String(process.env.SITE_PUBLIC_ORIGIN ?? "").trim();
   const baseUrl = configuredOrigin ? new URL(configuredOrigin).origin : `${protocol}://${host}`;
-  const title = "Pata Papaya — Juguetes tropicales para patas felices";
-  const description = "Juguetes tropicales para perros y gatos con muchas ganas de jugar.";
+  const title = "Nexo Animal — Bienestar para todas las especies";
+  const description = "Tienda especializada en cuidado, alimentación y equipamiento para animales de compañía.";
 
   return {
     metadataBase: new URL(baseUrl),
@@ -35,13 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       type: "website",
       url: baseUrl,
-      images: [{ url: `${baseUrl}/og-pata-papaya.png`, width: 1736, height: 909, alt: "Pata Papaya — Juguetes tropicales para patas felices" }],
+      images: [{ url: "/og.png", width: 1736, height: 909, alt: "Nexo Animal — Bienestar para todas las especies" }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`${baseUrl}/og-pata-papaya.png`],
+      images: ["/og.png"],
     },
   };
 }

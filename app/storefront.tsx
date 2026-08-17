@@ -112,20 +112,20 @@ export default function Storefront() {
   function subscribe(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     event.currentTarget.reset();
-    setNotice("¡Ya formas parte de la manada!");
+    setNotice("Suscripción completada correctamente.");
   }
 
   return (
     <main className="storefront">
-      <div className="announcement">Envío gratis desde 45 € <span>●</span> Juegos aprobados por patas exigentes</div>
+      <div className="announcement">Envío gratuito desde 45 € <span>·</span> Atención especializada</div>
 
       <header className="site-header">
-        <a className="brand" href="#inicio" aria-label="Pata Papaya, inicio">PATA PAPAYA</a>
+        <a className="brand" href="#inicio" aria-label="Nexo Animal, inicio">NEXO ANIMAL</a>
         <nav aria-label="Navegación principal">
-          <a href="#coleccion">Juguetes</a>
-          <a href="#coleccion" onClick={() => setCategory("Perros")}>Perros</a>
-          <a href="#coleccion" onClick={() => setCategory("Gatos")}>Gatos</a>
-          <a href="#historia">Nuestra manada</a>
+          <a href="#coleccion">Catálogo</a>
+          <a href="#coleccion">Especies</a>
+          <a href="#coleccion">Novedades</a>
+          <a href="#historia">Nuestra selección</a>
         </nav>
         <div className="header-actions">
           <a href="/cuenta">Mi cuenta</a>
@@ -138,31 +138,31 @@ export default function Storefront() {
 
       <section className="hero" id="inicio">
         <div className="hero-copy">
-          <p className="eyebrow">Juguetes tropicales · Diversión responsable</p>
-          <h1>Más <em>juego.</em><br />Menos sofás mordidos.</h1>
-          <p className="hero-description">Color, movimiento y juguetes con mucha selva para perros y gatos que se toman la diversión muy en serio.</p>
-          <a className="primary-link" href="#coleccion">Soltar la diversión <span aria-hidden="true">↗</span></a>
+          <p className="eyebrow">Bienestar · Cuidado · Equipamiento</p>
+          <h1>Todo lo que necesitan, en un solo lugar.</h1>
+          <p className="hero-description">Una selección especializada para perros, gatos, aves, pequeños animales, acuarios y terrarios.</p>
+          <a className="primary-link" href="#coleccion">Explorar catálogo <span aria-hidden="true">↗</span></a>
         </div>
         <div className="hero-visual">
-          <img src="https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1600&q=90" alt="Perro saltando para atrapar un frisbee amarillo" />
-          <div className="hero-tag"><span>Favorito de la manada</span><strong>Frisbee Guayaba</strong></div>
+          <img src="https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&w=1600&q=90" alt="Conejo doméstico en un entorno natural" />
+          <div className="hero-tag"><span>Selección multiespecie</span><strong>Seis categorías especializadas</strong></div>
         </div>
       </section>
 
       <section className="collection" id="coleccion">
         <div className="section-heading">
-          <div><p className="eyebrow">La juguetería feliz</p><h2>Para mover la cola</h2></div>
-          <span className="result-count">{visibleProducts.length} aventuras</span>
+          <div><p className="eyebrow">Selección destacada</p><h2>Productos para cada especie</h2></div>
+          <span className="result-count">{visibleProducts.length} productos</span>
         </div>
 
         <div className="catalog-tools" aria-label="Filtros del catálogo">
           <div className="category-tabs">
-            {["Todo", "Perros", "Gatos"].map((item) => (
+            {["Todo", "Perros", "Gatos", "Aves", "Pequeños animales", "Acuario", "Terrario"].map((item) => (
               <button className={category === item ? "active" : ""} type="button" key={item} onClick={() => setCategory(item)}>{item}</button>
             ))}
           </div>
           <button className="inline-search" type="button" onClick={() => setSearchOpen(true)}>
-            {search ? `Buscando “${search}”` : "Buscar el próximo favorito"} <span aria-hidden="true">⌕</span>
+            {search ? `Buscando “${search}”` : "Buscar por producto o categoría"} <span aria-hidden="true">⌕</span>
           </button>
         </div>
 
@@ -171,7 +171,7 @@ export default function Storefront() {
             {visibleProducts.map((product) => (
               <article className="product-card" key={product.id}>
                 <div className="product-image">
-                  {product.featured && <span className="product-badge">Top patitas</span>}
+                  {product.featured && <span className="product-badge">Destacado</span>}
                   <a className="product-image-link" href={`/productos/${product.slug}`} aria-label={`Ver ${product.name}`}>
                     <img src={product.image} alt={product.name} />
                   </a>
@@ -186,39 +186,39 @@ export default function Storefront() {
             ))}
           </div>
         ) : (
-          <div className="empty-results"><span>Ese juguete se ha escondido</span><h3>Probemos otra búsqueda.</h3><button type="button" onClick={() => { setSearch(""); setCategory("Todo"); }}>Ver todos los juguetes</button></div>
+          <div className="empty-results"><span>Sin resultados</span><h3>No hemos encontrado productos con esos criterios.</h3><button type="button" onClick={() => { setSearch(""); setCategory("Todo"); }}>Ver todo el catálogo</button></div>
         )}
       </section>
 
       <section className="manifesto" id="historia">
         <div className="manifesto-image">
-          <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&q=85" alt="Dos perros corriendo juntos al aire libre" />
-          <span>Madrid · Manada desde 2024</span>
+          <img src="https://images.unsplash.com/photo-1607798136809-1483b83f32fd?auto=format&fit=crop&w=1400&q=85" alt="Ave posada sobre una rama natural" />
+          <span>Selección profesional · Madrid</span>
         </div>
         <div className="manifesto-copy">
-          <p className="eyebrow">Nuestro manifiesto animal</p>
-          <h2>Jugar también<br /><em>es cuidar.</em></h2>
-          <p>Elegimos juguetes que despiertan instintos, gastan energía y fortalecen vínculos. Más carreras por el pasillo, más siestas felices y menos aburrimiento.</p>
-          <div className="manifesto-stats"><div><strong>0%</strong><span>Aburrimiento permitido</span></div><div><strong>100%</strong><span>Colas en movimiento</span></div></div>
+          <p className="eyebrow">Criterio profesional</p>
+          <h2>Una selección pensada<br /><em>para su bienestar.</em></h2>
+          <p>Organizamos el catálogo por especie y necesidad para ofrecer una experiencia clara, útil y adaptable. Cada producto incluye información precisa, disponibilidad y una categoría definida.</p>
+          <div className="manifesto-stats"><div><strong>6</strong><span>Categorías especializadas</span></div><div><strong>1</strong><span>Catálogo completamente configurable</span></div></div>
         </div>
       </section>
 
       <section className="newsletter">
-        <p className="eyebrow">Correo que da la patita</p>
-        <h2>Novedades con<br /><em>mucho olfato.</em></h2>
+        <p className="eyebrow">Información útil</p>
+        <h2>Novedades y cuidado,<br /><em>sin ruido.</em></h2>
         <form onSubmit={subscribe}>
           <label className="sr-only" htmlFor="newsletter-email">Tu correo electrónico</label>
           <input id="newsletter-email" type="email" placeholder="tu@email.com" required />
           <button type="submit">Apuntarme <span aria-hidden="true">→</span></button>
         </form>
-        <small>Un correo al mes. Sin spam, salvo que tu perro aprenda a escribir.</small>
+        <small>Un envío mensual con novedades de catálogo y recomendaciones de cuidado.</small>
       </section>
 
       <footer>
-        <a className="footer-brand" href="#inicio">PATA PAPAYA</a>
-        <p>Juguetes tropicales para animales con personalidad.</p>
-        <div className="footer-links"><a href="#coleccion">Juguetes</a><a href="#historia">La manada</a><a href="/cuenta">Mi cuenta</a><a href="/admin">Administración</a><a href="mailto:hola@patapapaya.local">Contacto</a></div>
-        <div className="footer-legal"><span>© 2026 Pata Papaya</span><span>Prototipo de tienda online</span></div>
+        <a className="footer-brand" href="#inicio">NEXO ANIMAL</a>
+        <p>Una base de comercio electrónico adaptable a cualquier catálogo.</p>
+        <div className="footer-links"><a href="#coleccion">Catálogo</a><a href="#historia">Nuestro criterio</a><a href="/cuenta">Mi cuenta</a><a href="/admin">Administración</a><a href="mailto:hola@nexoanimal.local">Contacto</a></div>
+        <div className="footer-legal"><span>© 2026 Nexo Animal</span><span>Prototipo de comercio electrónico</span></div>
       </footer>
 
       {searchOpen && (
@@ -229,7 +229,7 @@ export default function Storefront() {
             <p className="eyebrow">¿Qué estás buscando?</p>
             <label className="sr-only" htmlFor="store-search">Buscar productos</label>
             <input id="store-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Escribe aquí…" />
-            <div className="search-suggestions"><span>Prueba con:</span>{["pelota", "mordedor", "gatos"].map((term) => <button type="button" key={term} onClick={() => setSearch(term)}>{term}</button>)}</div>
+            <div className="search-suggestions"><span>Prueba con:</span>{["perros", "aves", "acuario"].map((term) => <button type="button" key={term} onClick={() => setSearch(term)}>{term}</button>)}</div>
             <button className="search-submit" type="button" onClick={() => { setSearchOpen(false); document.getElementById("coleccion")?.scrollIntoView(); }}>Ver {visibleProducts.length} resultados <span>→</span></button>
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function Storefront() {
                 <div className="cart-summary"><div><span>Subtotal</span><strong>{money.format(cartTotal)}</strong></div><small>Impuestos incluidos. Envío calculado al finalizar.</small><button type="button" onClick={() => { window.location.href = "/checkout"; }}>Finalizar compra <span>→</span></button></div>
               </>
             ) : (
-              <div className="empty-cart"><span>La cesta está de siesta.</span><p>Encuentra un juguete que haga mover esa cola.</p><button type="button" onClick={() => setCartOpen(false)}>Seguir olfateando</button></div>
+              <div className="empty-cart"><span>Tu cesta está vacía.</span><p>Explora el catálogo y añade los productos que necesites.</p><button type="button" onClick={() => setCartOpen(false)}>Volver al catálogo</button></div>
             )}
           </aside>
         </div>

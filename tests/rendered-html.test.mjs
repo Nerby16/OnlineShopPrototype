@@ -23,7 +23,7 @@ async function render(pathname = "/") {
   );
 }
 
-test("server-renders the Pata Papaya storefront and social metadata", async () => {
+test("server-renders the Nexo Animal storefront and social metadata", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -34,29 +34,29 @@ test("server-renders the Pata Papaya storefront and social metadata", async () =
 
   const html = await response.text();
   assert.match(html, /<html lang="es">/i);
-  assert.match(html, /<title>Pata Papaya — Juguetes tropicales para patas felices<\/title>/i);
-  assert.match(html, /Más <em>juego\.<\/em><br\/>Menos sofás mordidos\./i);
-  assert.match(html, /Frisbee Guayaba/);
-  assert.match(html, /Caña Tucán/);
-  assert.match(html, /Pelota Coco Loco/);
-  assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og-pata-papaya\.png"/i);
+  assert.match(html, /<title>Nexo Animal — Bienestar para todas las especies<\/title>/i);
+  assert.match(html, /Todo lo que necesitan, en un solo lugar\./i);
+  assert.match(html, /Disco de entrenamiento Terra/);
+  assert.match(html, /Percha natural Olmo/);
+  assert.match(html, /Filtro compacto Aqua 40/);
+  assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og\.png"/i);
   assert.match(html, /name="twitter:card" content="summary_large_image"/i);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/i);
 });
 
 test("renders product records with route-specific social metadata", async () => {
   for (const product of [
-    { slug: "frisbee-guayaba", name: "Frisbee Guayaba", imageId: "photo-1604182965221-88b1bc9897ed" },
-    { slug: "raton-maracuya", name: "Ratón Maracuyá", imageId: "photo-1708979346051-e809d2059b32" },
+    { slug: "disco-entrenamiento-terra", name: "Disco de entrenamiento Terra", imageId: "photo-1604182965221-88b1bc9897ed" },
+    { slug: "tunel-heno-prado", name: "Túnel de heno Prado", imageId: "photo-1742094611825-4e4d6493fbfd" },
   ]) {
     const response = await render(`/productos/${product.slug}`);
     assert.equal(response.status, 200);
     const html = await response.text();
-    assert.match(html, new RegExp(`<title>${product.name} — Pata Papaya<\\/title>`));
-    assert.match(html, new RegExp(`property="og:title" content="${product.name} — Pata Papaya"`));
+    assert.match(html, new RegExp(`<title>${product.name} — Nexo Animal<\\/title>`));
+    assert.match(html, new RegExp(`property="og:title" content="${product.name} — Nexo Animal"`));
     assert.match(html, new RegExp(`property="og:image" content="[^"]*${product.imageId}`));
-    assert.match(html, new RegExp(`name="twitter:title" content="${product.name} — Pata Papaya"`));
-    assert.doesNotMatch(html, /property="og:image" content="[^"]*\/og-pata-papaya\.png"/i);
+    assert.match(html, new RegExp(`name="twitter:title" content="${product.name} — Nexo Animal"`));
+    assert.doesNotMatch(html, /property="og:image" content="[^"]*\/og\.png"/i);
   }
 });
 
@@ -83,17 +83,17 @@ test("renders checkout, customer account and protected administration surfaces",
     adminOrderResponse.text(),
     adminCustomerResponse.text(),
   ]);
-  assert.match(checkoutHtml, /<title>Finalizar compra — Pata Papaya<\/title>/i);
+  assert.match(checkoutHtml, /<title>Finalizar compra — Nexo Animal<\/title>/i);
   assert.match(checkoutHtml, /Checkout seguro/);
-  assert.match(accountHtml, /<title>Mi cuenta — Pata Papaya<\/title>/i);
+  assert.match(accountHtml, /<title>Mi cuenta — Nexo Animal<\/title>/i);
   assert.match(accountHtml, /Preparando tu espacio personal/);
-  assert.match(adminHtml, /<title>Administración — Pata Papaya<\/title>/i);
+  assert.match(adminHtml, /<title>Administración — Nexo Animal<\/title>/i);
   assert.match(adminHtml, /Acceso de administración/);
-  assert.match(customerOrderHtml, /<title>Detalle del pedido — Pata Papaya<\/title>/i);
+  assert.match(customerOrderHtml, /<title>Detalle del pedido — Nexo Animal<\/title>/i);
   assert.match(customerOrderHtml, /Preparando los detalles del pedido/);
-  assert.match(adminOrderHtml, /<title>Pedido — Administración de Pata Papaya<\/title>/i);
-  assert.match(adminOrderHtml, /Abriendo el pedido en la trastienda/);
-  assert.match(adminCustomerHtml, /<title>Cliente — Administración de Pata Papaya<\/title>/i);
+  assert.match(adminOrderHtml, /<title>Pedido — Administración de Nexo Animal<\/title>/i);
+  assert.match(adminOrderHtml, /Abriendo la información del pedido/);
+  assert.match(adminCustomerHtml, /<title>Cliente — Administración de Nexo Animal<\/title>/i);
   assert.match(adminCustomerHtml, /Preparando la ficha del cliente/);
 });
 
@@ -103,7 +103,7 @@ test("includes the local MySQL data layer and seeded schema", async () => {
     readFile(new URL("../server/index.mjs", import.meta.url), "utf8"),
     readFile(new URL("../server/auth.mjs", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
-    stat(new URL("../public/og-pata-papaya.png", import.meta.url)),
+    stat(new URL("../public/og.png", import.meta.url)),
     readFile(new URL("../app/admin/admin-dashboard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/cuenta/account.tsx", import.meta.url), "utf8"),
   ]);
@@ -122,8 +122,8 @@ test("includes the local MySQL data layer and seeded schema", async () => {
   assert.match(schema, /customer_phone VARCHAR\(30\)/i);
   assert.match(schema, /shipped_at TIMESTAMP NULL/i);
   assert.match(schema, /INSERT INTO products/i);
-  assert.match(schema, /Frisbee Guayaba/i);
-  assert.match(schema, /Túnel Monstera/i);
+  assert.match(schema, /Disco de entrenamiento Terra/i);
+  assert.match(schema, /Túnel de heno Prado/i);
   assert.match(server, /from "mysql2\/promise"/);
   assert.match(server, /url\.pathname === "\/api\/products"/);
   assert.match(server, /url\.pathname === "\/api\/orders"/);
