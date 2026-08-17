@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 UPDATE products SET name = 'Frisbee Guayaba', slug = 'frisbee-guayaba', category = 'Perros', description = 'Disco flexible y ligero para vuelos largos, saltos épicos y aterrizajes suaves.', price = 16.00, stock = 24, image_url = 'https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1000&q=85', featured = 1 WHERE id = 1;
 UPDATE products SET name = 'Caña Tucán', slug = 'cana-tucan', category = 'Gatos', description = 'Plumas, cintas y movimiento impredecible para despertar al cazador de salón.', price = 14.00, stock = 18, image_url = 'https://images.unsplash.com/photo-1611279976163-acf6a363e73a?auto=format&fit=crop&w=1000&q=85', featured = 1 WHERE id = 2;

@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 UPDATE products SET name = 'Disco de entrenamiento Terra', slug = 'disco-entrenamiento-terra', category = 'Perros', description = 'Disco flexible de alta visibilidad, diseñado para sesiones de juego y entrenamiento al aire libre.', price = 16.90, stock = 24, image_url = 'https://images.unsplash.com/photo-1604182965221-88b1bc9897ed?auto=format&fit=crop&w=1000&q=85', featured = 1 WHERE id = 1;
 UPDATE products SET name = 'Varita de juego Nilo', slug = 'varita-juego-nilo', category = 'Gatos', description = 'Varita ligera con movimiento irregular para favorecer la actividad y la estimulación diaria.', price = 14.50, stock = 18, image_url = 'https://images.unsplash.com/photo-1611279976163-acf6a363e73a?auto=format&fit=crop&w=1000&q=85', featured = 1 WHERE id = 2;

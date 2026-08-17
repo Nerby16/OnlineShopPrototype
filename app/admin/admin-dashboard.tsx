@@ -44,7 +44,7 @@ export default function AdminDashboard() {
   const apiFetch = useApi();
   const { user: sessionUser, setUser, checking: checkingSession, signOut } = useSession();
   const user = sessionUser?.role === "admin" ? sessionUser : null;
-  const [email, setEmail] = useState("admin@lumina.local");
+  const [email, setEmail] = useState("admin@nexoanimal.local");
   const [password, setPassword] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -229,9 +229,9 @@ export default function AdminDashboard() {
 
   return (
     <main className="admin-page">
-      <aside className="admin-sidebar"><a className="brand" href="/">NEXO ANIMAL</a><div><span>Sesión de {user.name}</span><strong>Catálogo y operaciones</strong></div><nav><a href="#resumen">Resumen</a><a href="#productos">Productos</a><a href="#pedidos">Pedidos</a><a href="#clientes">Clientes</a></nav><button type="button" onClick={logout}>Cerrar sesión</button></aside>
+      <aside className="admin-sidebar"><a className="brand" href="/">NEXO ANIMAL</a><div><span>Sesión administrativa</span><strong>Catálogo y operaciones</strong></div><nav><a href="#resumen">Resumen</a><a href="#productos">Productos</a><a href="#pedidos">Pedidos</a><a href="#clientes">Clientes</a></nav><button type="button" onClick={logout}>Cerrar sesión</button></aside>
       <div className="admin-content">
-        <header className="admin-topbar"><div><p className="eyebrow">Administración Nexo Animal</p><h1>Buenos días, {user.name.split(" ")[0]}.</h1></div><button type="button" onClick={refreshAll} disabled={tablesLoading}>{tablesLoading ? "Actualizando…" : "Actualizar datos ↻"}</button></header>
+        <header className="admin-topbar"><div><p className="eyebrow">Administración Nexo Animal</p><h1>Panel de gestión.</h1></div><button type="button" onClick={refreshAll} disabled={tablesLoading}>{tablesLoading ? "Actualizando…" : "Actualizar datos ↻"}</button></header>
         {error && <p className="admin-message error" role="alert">{error}</p>}{notice && <p className="admin-message" role="status">{notice}</p>}
 
         <section className="admin-section" id="resumen"><div className="admin-stats"><article><span>Productos activos</span><strong>{analytics.activeProducts}</strong></article><article className={analytics.lowStock ? "warning" : ""}><span>Stock bajo</span><strong>{analytics.lowStock}</strong></article><article className={analytics.outOfStock ? "danger" : ""}><span>Agotados</span><strong>{analytics.outOfStock}</strong></article><article><span>Pedidos pendientes</span><strong>{analytics.pendingOrders}</strong></article><article><span>Clientes</span><strong>{analytics.customers}</strong></article><article><span>Ventas acumuladas</span><strong>{money.format(analytics.revenue)}</strong></article><article><span>Pedido medio</span><strong>{money.format(analytics.averageOrder)}</strong></article></div>

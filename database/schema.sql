@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS lumina_store
+CREATE DATABASE IF NOT EXISTS nexo_animal_store
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE lumina_store;
+USE nexo_animal_store;
 
 CREATE TABLE IF NOT EXISTS products (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,

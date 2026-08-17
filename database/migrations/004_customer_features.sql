@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 CREATE TABLE IF NOT EXISTS addresses (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -25,4 +25,3 @@ CREATE TABLE IF NOT EXISTS favorites (
   CONSTRAINT favorites_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT favorites_product_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
-

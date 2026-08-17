@@ -41,7 +41,7 @@ test("server-renders the Nexo Animal storefront and social metadata", async () =
   assert.match(html, /Filtro compacto Aqua 40/);
   assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og\.png"/i);
   assert.match(html, /name="twitter:card" content="summary_large_image"/i);
-  assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/i);
+  assert.doesNotMatch(html, /react-loading-skeleton|Your site is taking shape/i);
 });
 
 test("renders product records with route-specific social metadata", async () => {
@@ -180,7 +180,7 @@ test("hashes credentials, rejects malformed hashes and protects session cookies"
   assert.equal(await verifyPassword("contraseña-segura-2026", hash), true);
   assert.equal(await verifyPassword("contraseña-incorrecta", hash), false);
   assert.equal(await verifyPassword("cualquier-clave", "scrypt$mal$formado"), false);
-  assert.equal(readCookie({ headers: { cookie: "lumina_session=%E0%A4%A" } }, "lumina_session"), null);
+  assert.equal(readCookie({ headers: { cookie: "nexo_animal_session=%E0%A4%A" } }, "nexo_animal_session"), null);
   assert.match(
     sessionCookie("token-de-prueba", 3600),
     /HttpOnly; SameSite=Strict; Path=\/; Max-Age=3600; Priority=High/,

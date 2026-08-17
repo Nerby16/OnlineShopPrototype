@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 SET @shipping_address_exists = (
   SELECT COUNT(*)

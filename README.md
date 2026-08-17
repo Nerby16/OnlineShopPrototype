@@ -1,151 +1,177 @@
-# Nexo Animal — prototipo de comercio electrónico multiespecie
+# Nexo Animal
 
-Aplicación full-stack de una tienda para animales en español. Incluye un catálogo
-multiespecie pensado como base reutilizable para otros tipos de comercio,
-filtros, búsqueda, cesta persistente, diseño responsive y una API local
-conectada a MySQL.
+![Estado del proyecto](https://img.shields.io/badge/estado-prototipo%20estable-304a40)
+![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
+![CI](https://github.com/Nerby16/nexo-animal-store-prototype/actions/workflows/ci.yml/badge.svg)
+
+Prototipo full-stack de comercio electrónico multiespecie. El proyecto demuestra
+un recorrido completo de compra, cuentas de cliente, gestión administrativa,
+persistencia en MySQL y una API protegida, manteniendo una interfaz adaptable a
+otros catálogos y modelos de tienda.
+
+> Proyecto de portfolio. No procesa pagos reales ni debe utilizarse como comercio
+> en producción sin completar las medidas indicadas en la hoja de ruta.
+
+## Vista previa
+
+![Escaparate de Nexo Animal](docs/screenshots/storefront.png)
+
+| Área de cliente | Administración |
+| --- | --- |
+| ![Cuenta de cliente](docs/screenshots/account.png) | ![Panel administrativo](docs/screenshots/admin.png) |
 
 ## Funcionalidades
 
-- Catálogo con búsqueda, filtros y páginas individuales de producto.
-- Cesta persistente y checkout con validación de stock.
-- Creación transaccional de pedidos y descuento automático de inventario.
-- Registro e inicio de sesión de clientes con historial y estado de pedidos.
-- Perfil editable con nombre, teléfono y preferencias de comunicación.
-- Favoritos, libreta de direcciones y reutilización del perfil en checkout.
-- Cambio de contraseña y cancelación de pedidos pendientes con reposición de stock.
-- Detalle individual de pedido con cronología, entrega, importes y seguimiento.
-- Vista operativa de pedido para administración con actualización segura de estado.
-- Sesiones protegidas mediante cookies `HttpOnly` y contraseñas con hash `scrypt`.
-- Panel administrativo para productos, stock, clientes, estados de pedido y subida de imágenes.
-- Ficha individual de cliente con métricas, actividad, direcciones, favoritos y pedidos filtrables.
-- Bloqueo y reactivación de cuentas con cierre inmediato de todas sus sesiones.
-- Búsqueda, filtros por fechas/estado/inventario y paginación desde MySQL.
-- Indicadores de stock, restauración de productos y ranking de ventas global.
-- Confirmaciones integradas en la interfaz para operaciones sensibles.
-- Imágenes locales JPEG, PNG o WebP con validación de firma y límite de 5 MB.
-- Metadatos sociales y SEO específicos para cada producto.
-- Interfaz responsive y estados de error, carga y confirmación.
+### Tienda
+
+- Catálogo multiespecie con búsqueda y filtros por categoría.
+- Fichas individuales con metadatos sociales y SEO propios.
+- Favoritos, cesta persistente y cálculo de envío gratuito.
+- Checkout con validación de stock y creación transaccional del pedido.
+
+### Área de cliente
+
+- Registro, inicio y cierre de sesión mediante cookie `HttpOnly`.
+- Perfil, teléfono, preferencias y cambio de contraseña.
+- Favoritos, direcciones guardadas e historial de pedidos.
+- Cronología de cada pedido, seguimiento y cancelación controlada.
+
+### Administración
+
+- Gestión de productos, categorías, imágenes, stock y visibilidad.
+- Pedidos filtrables con estados y referencias de seguimiento.
+- Fichas de clientes, métricas de actividad y bloqueo de cuentas.
+- Indicadores de inventario, ventas y productos destacados.
+
+## Tecnologías
+
+| Capa | Tecnología |
+| --- | --- |
+| Interfaz | React 19, TypeScript, Vinext, Vite y CSS responsive |
+| API | Node.js, rutas HTTP y validación en servidor |
+| Datos | MySQL 8 y `mysql2/promise` |
+| Seguridad | `scrypt`, cookies protegidas, rate limiting y cabeceras HTTP |
+| Calidad | ESLint, TypeScript, Node Test Runner y GitHub Actions |
+
+## Arquitectura
+
+```mermaid
+flowchart LR
+    U["Navegador"] --> F["Interfaz React"]
+    F --> A["API Node.js"]
+    A --> D[("MySQL")]
+    A --> I["Imágenes de producto"]
+    A --> S["Sesiones y autorización"]
+```
+
+Las URL de la API están centralizadas en `lib/api.ts`. Los hooks `useApi`,
+`useSession` y `useCart` separan el acceso a datos del resto de la interfaz,
+facilitando una futura migración a Supabase sin rehacer todas las pantallas.
 
 ## Puesta en marcha
 
-Requisitos: Node.js 22 o superior y MySQL 8.
+### Requisitos
 
-1. Crea la base de datos y carga los productos de ejemplo:
+- Node.js 22 o superior.
+- MySQL 8 o MariaDB compatible.
 
-   ```bash
-   mysql -u root -p < database/schema.sql
-   ```
+### 1. Preparar el proyecto
 
-2. Si actualizas una instalación existente, aplica también las migraciones:
+```bash
+git clone https://github.com/Nerby16/nexo-animal-store-prototype.git
+cd nexo-animal-store-prototype
+npm install
+```
 
-   ```bash
-   mysql -u root -p < database/migrations/002_checkout.sql
-   mysql -u root -p < database/migrations/003_accounts.sql
-   mysql -u root -p < database/migrations/004_customer_features.sql
-   mysql -u root -p < database/migrations/005_order_tracking.sql
-   mysql -u root -p < database/migrations/006_customer_profiles.sql
-   mysql -u root -p < database/migrations/007_pet_store_rebrand.sql
-   mysql -u root -p < database/migrations/008_nexo_animal_multispecies.sql
-   ```
+Copia `.env.example` como `.env` y configura las credenciales de MySQL y la
+cuenta administrativa local.
 
-3. Copia `.env.example` como `.env`, ajusta MySQL y configura
-   `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
+### 2. Crear la base de datos
 
-4. Prepara la cuenta de demostración y sus pedidos representativos:
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-   ```bash
-   npm run db:seed-demo
-   ```
+El esquema crea las tablas y carga seis productos de demostración. Para una
+instalación existente, ejecuta en orden los archivos de `database/migrations`.
 
-5. Arranca la API en una terminal:
+### 3. Crear la demostración de cliente
 
-   ```bash
-   npm run api
-   ```
+```bash
+npm run db:seed-demo
+```
 
-6. Arranca la tienda en otra terminal:
+Esta tarea añade una cuenta de cliente, una dirección y pedidos representativos
+sin duplicarlos si se ejecuta varias veces.
 
-   ```bash
-   npm run dev
-   ```
+### 4. Iniciar la aplicación
 
-La tienda queda en `http://localhost:3000` y la API en `http://localhost:3001`.
-Si MySQL o la API no están activos, el escaparate usa automáticamente los datos
-de demostración para que el escaparate siga siendo navegable.
+```bash
+npm run api
+npm run dev
+```
 
-En Visual Studio Code también puedes pulsar `Ctrl + Shift + B` para iniciar la
-tienda y la API conjuntamente con la versión correcta de Node incluida en
-Laragon.
+La tienda estará disponible en `http://localhost:3000` y la API en
+`http://localhost:3001`. En Visual Studio Code, `Ctrl + Shift + B` inicia ambos
+servicios utilizando la instalación de Node incluida en Laragon.
 
-## Configuración de URL
+## Credenciales de demostración
 
-Todas las llamadas del navegador pasan por `lib/api.ts`. En local,
-`VITE_API_BASE_URL` apunta a `http://localhost:3001/api`; al publicar puede
-configurarse con una API HTTPS o con la ruta relativa `/api` si frontend y backend
-comparten dominio. Esta dirección es pública por diseño y nunca debe contener
-credenciales. Los secretos permanecen exclusivamente en `.env`, que está excluido
-de Git.
+### Cliente
 
-`SITE_PUBLIC_ORIGIN` establece el origen canónico usado en SEO y tarjetas sociales,
-evitando depender de cabeceras de host cuando el proyecto se publica. La lógica
-reutilizable del cliente está separada en `useApi`, `useSession` y `useCart`, lo que
-reduce el trabajo necesario para sustituir MySQL y las sesiones locales por
-Supabase en una iteración posterior.
+- Correo: `cliente@nexoanimal.local`
+- Contraseña: `nexo-animal-cliente-2026`
+
+### Administración
+
+La cuenta se genera con `ADMIN_EMAIL` y `ADMIN_PASSWORD` definidos en `.env`.
+Los valores de `.env.example` son exclusivamente locales y deben sustituirse.
+
+## Calidad y pruebas
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+```
+
+La integración continua ejecuta estas comprobaciones automáticamente en cada
+push y pull request dirigido a `main`. Las pruebas verifican compilación,
+renderizado de rutas, metadatos, autenticación, cookies, firmas de imágenes y
+la estructura de la capa de datos.
 
 ## Seguridad aplicada
 
-- Contraseñas de al menos 12 caracteres almacenadas con `scrypt` y sal aleatoria.
-- Cookies de sesión `HttpOnly`, `SameSite=Strict`, con prioridad alta y atributo
-  `Secure` al ejecutarse en producción.
-- Límites de intentos por IP y por cuenta en registro, acceso, cambio de contraseña
-  y creación de pedidos.
-- Validación del origen, del tipo `application/json` y de todos los datos recibidos
-  por la API.
-- Consultas MySQL parametrizadas, transacciones en checkout y comprobación del
-  stock en el servidor.
+- Contraseñas almacenadas con `scrypt`, sal aleatoria y comparación segura.
+- Cookies `HttpOnly`, `SameSite=Strict`, prioridad alta y `Secure` en producción.
+- Consultas parametrizadas y transacciones para pedidos e inventario.
+- Límites de intentos por IP y cuenta en operaciones sensibles.
+- Validación de origen, contenido JSON y datos recibidos por la API.
 - Cabeceras contra clickjacking, interpretación de contenido y fuga de referencias.
-- Imágenes de producto limitadas a 5 MB, reservadas al administrador y validadas
-  por su firma binaria; las remotas exigen HTTPS.
-- Enlaces externos de seguimiento limitados a direcciones HTTPS sin credenciales.
-- La cuenta administrativa inicial exige una contraseña explícita y rechaza las
-  credenciales locales de ejemplo en producción.
+- Imágenes limitadas a 5 MB y validadas por firma binaria.
+- Secretos excluidos de Git mediante `.gitignore`.
 
-Este endurecimiento reduce riesgos conocidos, pero el prototipo no debe exponerse
-como comercio real todavía. Antes de producción faltan recuperación y verificación
-de correo, una limitación de tráfico compartida entre servidores, pago real y una
-auditoría nueva después de migrar la autenticación y los datos a Supabase.
+## Estructura principal
 
-## Rutas principales
+```text
+app/                  Interfaz, rutas y metadatos
+database/             Esquema y migraciones MySQL
+hooks/                Estado reutilizable de sesión, API y cesta
+lib/                  Cliente HTTP y modelos compartidos
+server/               API, autenticación y subida de imágenes
+scripts/              Preparación de datos de demostración
+tests/                Pruebas automatizadas
+```
 
-- `/`: escaparate y catálogo.
-- `/productos/[slug]`: ficha individual con metadatos propios.
-- `/checkout`: creación de pedidos.
-- `/cuenta`: perfil, acceso, pedidos, favoritos, direcciones y seguridad de la cuenta.
-- `/cuenta/pedidos/[id]`: contenido, cronología y seguimiento de un pedido propio.
-- `/admin`: gestión del catálogo, pedidos y clientes. La cuenta inicial se
-  configura con `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`.
-- `/admin/pedidos/[id]`: detalle operativo, estado, stock y seguimiento.
-- `/admin/clientes/[id]`: ficha, actividad, pedidos y estado de una cuenta de cliente.
+## Hoja de ruta
 
-## Cuenta de demostración
+- Migrar MySQL, autenticación y almacenamiento a Supabase.
+- Añadir recuperación y verificación de correo electrónico.
+- Incorporar una pasarela de pago en entorno de pruebas.
+- Añadir pruebas de navegador para los recorridos críticos.
+- Realizar una auditoría nueva antes de cualquier uso en producción.
 
-- Correo: `cliente@lumina.local`
-- Contraseña: `lumina-cliente-2026`
+## Licencia
 
-El generador es idempotente por estado: conserva los pedidos existentes y solo
-añade los ejemplos pendiente, preparando o enviado que falten. Por seguridad se
-niega a ejecutarse cuando `NODE_ENV=production`.
-
-## Archivos subidos
-
-Las imágenes cargadas desde administración se guardan en
-`storage/product-images`. El contenido de esa carpeta se excluye de Git: en un
-entorno publicado debe sustituirse por almacenamiento de objetos persistente.
-
-## Siguiente iteración sugerida
-
-Migración independiente de MySQL local a PostgreSQL, Auth y Storage de Supabase,
-incluyendo políticas RLS y una nueva auditoría. Después: recuperación de contraseña,
-verificación de correo, pasarela de pago y pruebas de navegador de los recorridos
-críticos.
+Distribuido bajo la licencia MIT. Consulta [LICENSE](LICENSE).

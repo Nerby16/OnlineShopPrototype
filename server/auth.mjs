@@ -50,7 +50,7 @@ export function readCookie(request, name) {
 
 export function sessionCookie(token, maxAgeSeconds, secure = false) {
   return [
-    `lumina_session=${encodeURIComponent(token)}`,
+    `nexo_animal_session=${encodeURIComponent(token)}`,
     "HttpOnly",
     "SameSite=Strict",
     "Path=/",
@@ -62,7 +62,7 @@ export function sessionCookie(token, maxAgeSeconds, secure = false) {
 
 export function clearSessionCookie(secure = false) {
   return [
-    "lumina_session=",
+    "nexo_animal_session=",
     "HttpOnly",
     "SameSite=Strict",
     "Path=/",

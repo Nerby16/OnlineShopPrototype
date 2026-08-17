@@ -18,7 +18,7 @@ import { detectImageType, imageTypeFromFilename, MAX_IMAGE_BYTES } from "./uploa
 const port = Number(process.env.API_PORT ?? 3001);
 const allowedOrigin = normalizeConfiguredOrigin(process.env.FRONTEND_ORIGIN ?? "http://localhost:3000", "FRONTEND_ORIGIN");
 const apiPublicOrigin = normalizeConfiguredOrigin(process.env.API_PUBLIC_ORIGIN ?? `http://127.0.0.1:${port}`, "API_PUBLIC_ORIGIN");
-const adminEmail = String(process.env.ADMIN_EMAIL ?? "admin@lumina.local").trim().toLowerCase();
+const adminEmail = String(process.env.ADMIN_EMAIL ?? "admin@nexoanimal.local").trim().toLowerCase();
 const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.ADMIN_TOKEN ?? "";
 const secureCookies = process.env.NODE_ENV === "production";
 const sessionDurationSeconds = 60 * 60 * 24 * 7;
@@ -29,7 +29,7 @@ const pool = mysql.createPool({
   port: Number(process.env.DB_PORT ?? 3306),
   user: process.env.DB_USER ?? "root",
   password: process.env.DB_PASSWORD ?? "",
-  database: process.env.DB_NAME ?? "lumina_store",
+  database: process.env.DB_NAME ?? "nexo_animal_store",
   connectionLimit: 8,
   waitForConnections: true,
   decimalNumbers: true,
@@ -303,7 +303,7 @@ function assertAllowedOrigin(request) {
   if (["GET", "HEAD", "OPTIONS"].includes(request.method ?? "GET")) return;
   const origin = request.headers.origin;
   if (origin === allowedOrigin) return;
-  if (origin || readCookie(request, "lumina_session")) {
+  if (origin || readCookie(request, "nexo_animal_session")) {
     throw httpError(403, "Origen de la solicitud no permitido.");
   }
 }
@@ -375,7 +375,7 @@ async function createSessionForUser(userId) {
 }
 
 async function getSessionUser(request) {
-  const token = readCookie(request, "lumina_session");
+  const token = readCookie(request, "nexo_animal_session");
   if (!token) return null;
   const [rows] = await pool.execute(`
     SELECT u.id, u.email, u.name, u.phone, u.marketing_opt_in, u.role
@@ -417,7 +417,7 @@ async function ensureAdminUser() {
     console.warn("ADMIN_PASSWORD no está configurada; no se creará la cuenta administrativa inicial.");
     return;
   }
-  if (secureCookies && ["change-this-local-password", "lumina-estudio-local"].includes(adminPassword)) {
+  if (secureCookies && ["change-this-local-password", "nexo-animal-local"].includes(adminPassword)) {
     throw new Error("ADMIN_PASSWORD debe cambiarse antes de iniciar la aplicación en producción.");
   }
   validateEmail(adminEmail);
@@ -862,7 +862,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/auth/logout") {
-      const token = readCookie(request, "lumina_session");
+      const token = readCookie(request, "nexo_animal_session");
       if (token) await pool.execute("DELETE FROM sessions WHERE token_hash = ?", [hashSessionToken(token)]);
       sendJson(response, 200, { success: true }, { "Set-Cookie": clearSessionCookie(secureCookies) });
       return;

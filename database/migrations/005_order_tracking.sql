@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 SET @statement = IF(
   (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'orders' AND column_name = 'tracking_number') = 0,

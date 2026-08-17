@@ -5,15 +5,15 @@ if (process.env.NODE_ENV === "production") {
   throw new Error("La cuenta de demostración no puede generarse en producción.");
 }
 
-const demoEmail = "cliente@lumina.local";
-const demoPassword = "lumina-cliente-2026";
+const demoEmail = "cliente@nexoanimal.local";
+const demoPassword = "nexo-animal-cliente-2026";
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST ?? "127.0.0.1",
   port: Number(process.env.DB_PORT ?? 3306),
   user: process.env.DB_USER ?? "root",
   password: process.env.DB_PASSWORD ?? "",
-  database: process.env.DB_NAME ?? "lumina_store",
+  database: process.env.DB_NAME ?? "nexo_animal_store",
   decimalNumbers: true,
 });
 

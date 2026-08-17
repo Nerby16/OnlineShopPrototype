@@ -1,4 +1,4 @@
-USE lumina_store;
+USE nexo_animal_store;
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

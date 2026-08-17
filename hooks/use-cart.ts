@@ -6,7 +6,7 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "reac
 
 export type CartLine = { id: number; quantity: number };
 
-const CART_STORAGE_KEY = "lumina-cart";
+const CART_STORAGE_KEY = "nexo-animal-cart";
 
 function normalizeCart(value: unknown): CartLine[] {
   if (!Array.isArray(value)) return [];
