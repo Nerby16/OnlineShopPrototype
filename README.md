@@ -75,6 +75,21 @@ En Visual Studio Code también puedes pulsar `Ctrl + Shift + B` para iniciar la
 tienda y la API conjuntamente con la versión correcta de Node incluida en
 Laragon.
 
+## Configuración de URL
+
+Todas las llamadas del navegador pasan por `lib/api.ts`. En local,
+`VITE_API_BASE_URL` apunta a `http://localhost:3001/api`; al publicar puede
+configurarse con una API HTTPS o con la ruta relativa `/api` si frontend y backend
+comparten dominio. Esta dirección es pública por diseño y nunca debe contener
+credenciales. Los secretos permanecen exclusivamente en `.env`, que está excluido
+de Git.
+
+`SITE_PUBLIC_ORIGIN` establece el origen canónico usado en SEO y tarjetas sociales,
+evitando depender de cabeceras de host cuando el proyecto se publica. La lógica
+reutilizable del cliente está separada en `useApi`, `useSession` y `useCart`, lo que
+reduce el trabajo necesario para sustituir MySQL y las sesiones locales por
+Supabase en una iteración posterior.
+
 ## Seguridad aplicada
 
 - Contraseñas de al menos 12 caracteres almacenadas con `scrypt` y sal aleatoria.
@@ -88,7 +103,8 @@ Laragon.
   stock en el servidor.
 - Cabeceras contra clickjacking, interpretación de contenido y fuga de referencias.
 - Imágenes de producto limitadas a 5 MB, reservadas al administrador y validadas
-  por su firma binaria.
+  por su firma binaria; las remotas exigen HTTPS.
+- Enlaces externos de seguimiento limitados a direcciones HTTPS sin credenciales.
 - La cuenta administrativa inicial exige una contraseña explícita y rechaza las
   credenciales locales de ejemplo en producción.
 

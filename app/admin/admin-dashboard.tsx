@@ -3,9 +3,10 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { API_URL, money, type Product } from "../../lib/products";
+import { useApi } from "../../hooks/use-api";
+import { useSession, type SessionUser } from "../../hooks/use-session";
+import { money, type Product } from "../../lib/products";
 
-type SessionUser = { id: number; email: string; name: string; role: "customer" | "admin" };
 type OrderStatus = "pending" | "paid" | "shipped" | "cancelled";
 type Order = { id: number; user_id: number | null; customer_name: string; customer_email: string; status: OrderStatus; total: number; item_count: number; created_at: string };
 type Customer = { id: number; name: string; email: string; active: boolean; order_count: number; lifetime_value: number; created_at: string; last_login_at: string | null };
@@ -40,8 +41,9 @@ function PaginationControls({ pagination, onPage }: { pagination: Pagination; on
 }
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const apiFetch = useApi();
+  const { user: sessionUser, setUser, checking: checkingSession, signOut } = useSession();
+  const user = sessionUser?.role === "admin" ? sessionUser : null;
   const [email, setEmail] = useState("admin@lumina.local");
   const [password, setPassword] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -75,13 +77,6 @@ export default function AdminDashboard() {
   const [archiving, setArchiving] = useState(false);
   const archiveSafeActionRef = useRef<HTMLButtonElement>(null);
 
-  async function apiFetch(path: string, options: RequestInit = {}) {
-    const response = await fetch(`${API_URL}${path}`, { ...options, credentials: "include", headers: { "Content-Type": "application/json", ...(options.headers ?? {}) } });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error ?? "La operación no se pudo completar.");
-    return data;
-  }
-
   function queryString(values: Record<string, string | number>) {
     const params = new URLSearchParams();
     Object.entries(values).forEach(([key, value]) => { if (String(value)) params.set(key, String(value)); });
@@ -110,7 +105,7 @@ export default function AdminDashboard() {
   }
 
   async function loadAnalytics() {
-    setAnalytics(await apiFetch("/admin/analytics"));
+    setAnalytics(await apiFetch<Analytics>("/admin/analytics"));
   }
 
   async function refreshAll() {
@@ -124,12 +119,6 @@ export default function AdminDashboard() {
       setTablesLoading(false);
     }
   }
-
-  useEffect(() => {
-    apiFetch("/auth/me").then(({ user: sessionUser }) => {
-      if (sessionUser?.role === "admin") setUser(sessionUser);
-    }).catch(() => setUser(null)).finally(() => setCheckingSession(false));
-  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -178,7 +167,7 @@ export default function AdminDashboard() {
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setError("");
     try {
-      const { user: signedInUser } = await apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+      const { user: signedInUser } = await apiFetch<{ user: SessionUser }>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
       if (signedInUser.role !== "admin") { await apiFetch("/auth/logout", { method: "POST" }); throw new Error("Esta cuenta no tiene permisos administrativos."); }
       setUser(signedInUser); setPassword("");
     } catch (loginError) { setError(loginError instanceof Error ? loginError.message : "No se pudo iniciar sesión."); }
@@ -186,8 +175,8 @@ export default function AdminDashboard() {
   }
 
   async function logout() {
-    try { await apiFetch("/auth/logout", { method: "POST" }); }
-    finally { setUser(null); setProducts([]); setOrders([]); setCustomers([]); }
+    try { await signOut(); }
+    finally { setProducts([]); setOrders([]); setCustomers([]); }
   }
 
   function editProduct(product: Product) {
@@ -209,8 +198,7 @@ export default function AdminDashboard() {
   async function uploadImage(file: File) {
     setUploading(true); setError("");
     try {
-      const response = await fetch(`${API_URL}/admin/uploads`, { method: "POST", credentials: "include", headers: { "Content-Type": file.type }, body: file });
-      const data = await response.json(); if (!response.ok) throw new Error(data.error ?? "No se pudo subir la imagen.");
+      const data = await apiFetch<{ url: string }>("/admin/uploads", { method: "POST", headers: { "Content-Type": file.type }, body: file });
       setProductForm((current) => ({ ...current, image: data.url })); setNotice("Imagen subida y preparada para guardar");
     } catch (uploadError) { setError(uploadError instanceof Error ? uploadError.message : "No se pudo subir la imagen."); }
     finally { setUploading(false); }

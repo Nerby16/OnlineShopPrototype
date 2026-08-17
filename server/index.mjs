@@ -49,6 +49,33 @@ function normalizeConfiguredOrigin(value, settingName) {
   }
 }
 
+function validateProductImageUrl(value) {
+  const rawUrl = String(value ?? "").trim();
+  if (!rawUrl || rawUrl.length > 600) throw httpError(400, "La URL de imagen no es válida.");
+  try {
+    const url = new URL(rawUrl);
+    const isLocalUpload = url.origin === apiPublicOrigin
+      && /^\/api\/uploads\/[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(url.pathname);
+    if ((url.protocol !== "https:" && !isLocalUpload) || url.username || url.password) throw new Error();
+    return url.href;
+  } catch {
+    throw httpError(400, "La imagen debe usar HTTPS o proceder de las cargas locales de Lúmina.");
+  }
+}
+
+function validateTrackingUrl(value) {
+  const rawUrl = String(value ?? "").trim();
+  if (!rawUrl) return "";
+  if (rawUrl.length > 600) throw httpError(400, "La URL de seguimiento no es válida.");
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol !== "https:" || url.username || url.password) throw new Error();
+    return url.href;
+  } catch {
+    throw httpError(400, "La URL de seguimiento debe ser una dirección HTTPS válida.");
+  }
+}
+
 function apiSecurityHeaders() {
   return {
     "Cache-Control": "no-store",
@@ -176,7 +203,7 @@ function validateProduct(input) {
     description: String(input.description ?? "").trim(),
     price: Number(input.price),
     stock: Number(input.stock),
-    image: String(input.image ?? "").trim(),
+    image: validateProductImageUrl(input.image),
     featured: Boolean(input.featured),
   };
 
@@ -186,7 +213,6 @@ function validateProduct(input) {
   if (product.description.length < 10 || product.description.length > 320) throw httpError(400, "La descripción debe tener entre 10 y 320 caracteres.");
   if (!Number.isFinite(product.price) || product.price < 0) throw httpError(400, "El precio no es válido.");
   if (!Number.isInteger(product.stock) || product.stock < 0) throw httpError(400, "El stock no es válido.");
-  if (!/^https?:\/\//i.test(product.image) || product.image.length > 600) throw httpError(400, "La URL de imagen no es válida.");
   return product;
 }
 
@@ -1209,12 +1235,9 @@ const server = createServer(async (request, response) => {
     if (request.method === "PATCH" && adminTrackingMatch) {
       const input = await readJson(request);
       const trackingNumber = String(input.trackingNumber ?? "").trim();
-      const trackingUrl = String(input.trackingUrl ?? "").trim();
+      const trackingUrl = validateTrackingUrl(input.trackingUrl);
       if (trackingNumber.length > 80 || (trackingNumber && !/^[\p{L}\p{N} ._-]+$/u.test(trackingNumber))) {
         throw httpError(400, "El número de seguimiento no es válido.");
-      }
-      if (trackingUrl && (!/^https?:\/\//i.test(trackingUrl) || trackingUrl.length > 600)) {
-        throw httpError(400, "La URL de seguimiento no es válida.");
       }
       const orderId = Number(adminTrackingMatch[1]);
       const [result] = await pool.execute(`

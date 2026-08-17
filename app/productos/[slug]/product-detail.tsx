@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useState } from "react";
+import { useCart } from "../../../hooks/use-cart";
 import { money, type Product } from "../../../lib/products";
 
 type ProductDetailProps = {
@@ -10,20 +11,12 @@ type ProductDetailProps = {
   related: Product[];
 };
 
-type CartLine = { id: number; quantity: number };
-
 export default function ProductDetail({ product, related }: ProductDetailProps) {
+  const { cart, setCart, ready } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
   function saveToCart(goToCheckout = false) {
-    let cart: CartLine[] = [];
-    try {
-      cart = JSON.parse(window.localStorage.getItem("lumina-cart") ?? "[]");
-    } catch {
-      cart = [];
-    }
-
     const existing = cart.find((line) => line.id === product.id);
     const nextCart = existing
       ? cart.map((line) => line.id === product.id
@@ -31,7 +24,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
         : line)
       : [...cart, { id: product.id, quantity }];
 
-    window.localStorage.setItem("lumina-cart", JSON.stringify(nextCart));
+    setCart(nextCart);
     setAdded(true);
     if (goToCheckout) window.location.href = "/checkout";
   }
@@ -68,11 +61,11 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
               <span>{quantity}</span>
               <button type="button" onClick={() => setQuantity((value) => Math.min(product.stock, value + 1))} aria-label="Aumentar cantidad">+</button>
             </div>
-            <button className="detail-add" type="button" disabled={!product.stock} onClick={() => saveToCart(false)}>
+            <button className="detail-add" type="button" disabled={!product.stock || !ready} onClick={() => saveToCart(false)}>
               {added ? "Añadido a la cesta ✓" : "Añadir a la cesta"}
             </button>
           </div>
-          <button className="detail-buy" type="button" disabled={!product.stock} onClick={() => saveToCart(true)}>Comprar ahora <span>→</span></button>
+          <button className="detail-buy" type="button" disabled={!product.stock || !ready} onClick={() => saveToCart(true)}>Comprar ahora <span>→</span></button>
         </div>
       </section>
 

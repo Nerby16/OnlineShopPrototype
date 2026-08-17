@@ -3,9 +3,10 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element, react-hooks/set-state-in-effect */
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { API_URL, FALLBACK_PRODUCTS, money, type Product } from "../../lib/products";
-
-type CartLine = { id: number; quantity: number };
+import { useApi } from "../../hooks/use-api";
+import { useCart } from "../../hooks/use-cart";
+import { useSession } from "../../hooks/use-session";
+import { FALLBACK_PRODUCTS, money, type Product } from "../../lib/products";
 
 type OrderResult = {
   id: number;
@@ -14,52 +15,44 @@ type OrderResult = {
   linkedToAccount: boolean;
 };
 
-type SessionUser = { id: number; email: string; name: string; phone: string; role: "customer" | "admin" };
 type SavedAddress = { id: number; label: string; recipientName: string; addressLine: string; city: string; postalCode: string; isDefault: boolean };
 
 export default function Checkout() {
-  const [cart, setCart] = useState<CartLine[]>([]);
+  const request = useApi();
+  const { cart, setCart, clearCart, ready } = useCart();
+  const { user: account } = useSession();
   const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
-  const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [order, setOrder] = useState<OrderResult | null>(null);
-  const [account, setAccount] = useState<SessionUser | null>(null);
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [saveAddress, setSaveAddress] = useState(false);
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "", address: "", city: "", postalCode: "" });
 
   useEffect(() => {
-    try {
-      setCart(JSON.parse(window.localStorage.getItem("lumina-cart") ?? "[]"));
-    } catch {
-      setCart([]);
-    }
-    setReady(true);
-
-    fetch(`${API_URL}/products`)
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data: Product[]) => {
+    const controller = new AbortController();
+    request<Product[]>("/products", { signal: controller.signal })
+      .then((data) => {
         if (Array.isArray(data) && data.length) setProducts(data);
       })
       .catch(() => undefined);
+    return () => controller.abort();
+  }, [request]);
 
-    fetch(`${API_URL}/auth/me`, { credentials: "include" })
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then(async ({ user }: { user: SessionUser | null }) => {
-        if (!user) return;
-        setAccount(user);
-        setCustomer((current) => ({ ...current, name: user.name, email: user.email, phone: user.phone ?? "" }));
-        const response = await fetch(`${API_URL}/account/addresses`, { credentials: "include" });
-        if (!response.ok) return;
-        const savedAddresses: SavedAddress[] = await response.json();
+  useEffect(() => {
+    if (!account) return;
+    const controller = new AbortController();
+    setCustomer((current) => ({ ...current, name: account.name, email: account.email, phone: account.phone ?? "" }));
+    request<SavedAddress[]>("/account/addresses", { signal: controller.signal })
+      .then((savedAddresses) => {
         setAddresses(savedAddresses);
         const preferred = savedAddresses.find((address) => address.isDefault) ?? savedAddresses[0];
         if (preferred) applyAddress(preferred);
       })
       .catch(() => undefined);
-  }, []);
+    return () => controller.abort();
+  }, [account, request]);
 
   function applyAddress(address: SavedAddress) {
     setSelectedAddressId(String(address.id));
@@ -95,7 +88,6 @@ export default function Checkout() {
         : line)
       .filter((line) => line.quantity > 0);
     setCart(nextCart);
-    window.localStorage.setItem("lumina-cart", JSON.stringify(nextCart));
   }
 
   async function submitOrder(event: FormEvent<HTMLFormElement>) {
@@ -109,25 +101,18 @@ export default function Checkout() {
     };
 
     try {
-      const response = await fetch(`${API_URL}/orders`, {
+      const data = await request<OrderResult>("/orders", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "No se pudo crear el pedido.");
       if (account && saveAddress && !selectedAddressId) {
-        await fetch(`${API_URL}/account/addresses`, {
+        await request("/account/addresses", {
           method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ label: "Casa", recipientName: customer.name, addressLine: customer.address, city: customer.city, postalCode: customer.postalCode, isDefault: addresses.length === 0 }),
         }).catch(() => undefined);
       }
       setOrder(data);
-      setCart([]);
-      window.localStorage.removeItem("lumina-cart");
+      clearCart();
     } catch (orderError) {
       setError(orderError instanceof Error ? orderError.message : "No se pudo crear el pedido.");
     } finally {

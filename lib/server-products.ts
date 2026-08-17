@@ -1,9 +1,10 @@
 import { headers } from "next/headers";
-import { API_URL, FALLBACK_PRODUCTS, type Product } from "./products";
+import { apiUrl } from "./api";
+import { FALLBACK_PRODUCTS, type Product } from "./products";
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    const response = await fetch(`${API_URL}/products`, { cache: "no-store" });
+    const response = await fetch(apiUrl("/products"), { cache: "no-store" });
     if (response.ok) {
       const products = (await response.json()) as Product[];
       if (Array.isArray(products) && products.length) return products;
@@ -16,7 +17,7 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   try {
-    const response = await fetch(`${API_URL}/products/${encodeURIComponent(slug)}`, {
+    const response = await fetch(apiUrl(`/products/${encodeURIComponent(slug)}`), {
       cache: "no-store",
     });
     if (response.ok) return (await response.json()) as Product;

@@ -3,151 +3,46 @@
 /* eslint-disable @next/next/no-img-element, react-hooks/set-state-in-effect */
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-
-type Product = {
-  id: number;
-  name: string;
-  slug: string;
-  category: string;
-  description: string;
-  price: number;
-  stock: number;
-  image: string;
-  featured: boolean;
-};
-
-type CartLine = { id: number; quantity: number };
-type SessionUser = { id: number; email: string; name: string; role: "customer" | "admin" };
-
-const API_URL = "http://localhost:3001/api";
-
-const fallbackProducts: Product[] = [
-  {
-    id: 1,
-    name: "Sillón Lino 01",
-    slug: "sillon-lino-01",
-    category: "Casa",
-    description: "Roble macizo y lino lavado en un asiento de líneas tranquilas.",
-    price: 289,
-    stock: 8,
-    image: "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1000&q=85",
-    featured: true,
-  },
-  {
-    id: 2,
-    name: "Cerámica Aura",
-    slug: "ceramica-aura",
-    category: "Casa",
-    description: "Pieza torneada a mano con un esmalte mate de tacto mineral.",
-    price: 49,
-    stock: 16,
-    image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1000&q=85",
-    featured: true,
-  },
-  {
-    id: 3,
-    name: "Bolso Senda",
-    slug: "bolso-senda",
-    category: "Accesorios",
-    description: "Lona resistente y piel vegetal para acompañarte cada día.",
-    price: 119,
-    stock: 11,
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1000&q=85",
-    featured: true,
-  },
-  {
-    id: 4,
-    name: "Reloj Nodo",
-    slug: "reloj-nodo",
-    category: "Accesorios",
-    description: "Esfera limpia, caja de acero y correa de piel curtida.",
-    price: 149,
-    stock: 6,
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=1000&q=85",
-    featured: false,
-  },
-  {
-    id: 5,
-    name: "Zapatilla Alba",
-    slug: "zapatilla-alba",
-    category: "Accesorios",
-    description: "Una silueta ligera en piel suave y suela de caucho natural.",
-    price: 94,
-    stock: 14,
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=85",
-    featured: false,
-  },
-  {
-    id: 6,
-    name: "Lámpara Orbital",
-    slug: "lampara-orbital",
-    category: "Casa",
-    description: "Luz cálida y volumen escultórico para espacios serenos.",
-    price: 179,
-    stock: 5,
-    image: "https://images.unsplash.com/photo-1549497538-303791108f95?auto=format&fit=crop&w=1000&q=85",
-    featured: false,
-  },
-];
-
-const money = new Intl.NumberFormat("es-ES", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
+import { useApi } from "../hooks/use-api";
+import { useCart } from "../hooks/use-cart";
+import { useSession } from "../hooks/use-session";
+import { FALLBACK_PRODUCTS as fallbackProducts, money, type Product } from "../lib/products";
 
 export default function Storefront() {
+  const request = useApi();
+  const { cart, setCart } = useCart();
+  const { user: account } = useSession();
   const [products, setProducts] = useState(fallbackProducts);
   const [category, setCategory] = useState("Todo");
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<CartLine[]>([]);
-  const [cartReady, setCartReady] = useState(false);
   const [notice, setNotice] = useState("");
-  const [account, setAccount] = useState<SessionUser | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`${API_URL}/products`, { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then((data: Product[]) => {
+    request<Product[]>("/products", { signal: controller.signal })
+      .then((data) => {
         if (Array.isArray(data) && data.length) setProducts(data);
       })
       .catch(() => undefined);
     return () => controller.abort();
-  }, []);
+  }, [request]);
 
   useEffect(() => {
+    if (!account) {
+      setFavoriteIds([]);
+      return;
+    }
     const controller = new AbortController();
-    fetch(`${API_URL}/auth/me`, { credentials: "include", signal: controller.signal })
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then(async ({ user }: { user: SessionUser | null }) => {
-        setAccount(user);
-        if (!user) return;
-        const response = await fetch(`${API_URL}/account/favorites`, { credentials: "include", signal: controller.signal });
-        if (!response.ok) return;
-        const favorites: Product[] = await response.json();
+    request<Product[]>("/account/favorites", { signal: controller.signal })
+      .then((favorites) => {
         setFavoriteIds(favorites.map((product) => product.id));
       })
       .catch(() => undefined);
     return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("lumina-cart");
-      if (saved) setCart(JSON.parse(saved));
-    } catch {
-      setCart([]);
-    }
-    setCartReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (cartReady) window.localStorage.setItem("lumina-cart", JSON.stringify(cart));
-  }, [cart, cartReady]);
+  }, [account, request]);
 
   useEffect(() => {
     document.documentElement.style.overflow = searchOpen || cartOpen ? "hidden" : "";
@@ -203,14 +98,10 @@ export default function Storefront() {
     }
     const isFavorite = favoriteIds.includes(product.id);
     try {
-      const response = await fetch(`${API_URL}/account/favorites/${product.id}`, {
+      await request(`/account/favorites/${product.id}`, {
         method: isFavorite ? "DELETE" : "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: isFavorite ? undefined : "{}",
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
       setFavoriteIds((current) => isFavorite ? current.filter((id) => id !== product.id) : [...current, product.id]);
       setNotice(isFavorite ? `${product.name} ya no está en favoritos` : `${product.name} guardado en favoritos`);
     } catch {

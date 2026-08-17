@@ -11,6 +11,7 @@
     "start": "vinext start",
     "api": "node --env-file-if-exists=.env server/index.mjs",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .vinext --ignore-pattern .npm-cache",
     "db:seed-demo": "node --env-file-if-exists=.env scripts/seed-demo.mjs"
   },

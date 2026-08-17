@@ -3,7 +3,8 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element, react-hooks/set-state-in-effect */
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { API_URL, money, type Product } from "../../lib/products";
+import { useApi } from "../../hooks/use-api";
+import { money, type Product } from "../../lib/products";
 
 type SessionUser = { id: number; email: string; name: string; phone: string; marketingOptIn: boolean; role: "customer" | "admin" };
 
@@ -40,6 +41,7 @@ const statusCopy = {
 };
 
 export default function AccountArea() {
+  const apiFetch = useApi();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [orders, setOrders] = useState<AccountOrder[]>([]);
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
@@ -59,20 +61,12 @@ export default function AccountArea() {
   const [addressForm, setAddressForm] = useState(emptyAddress);
   const [profileForm, setProfileForm] = useState({ name: "", phone: "", marketingOptIn: false });
 
-  async function apiFetch(path: string, options: RequestInit = {}) {
-    const response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error ?? "La operación no se pudo completar.");
-    return data;
-  }
-
   async function loadAccountData() {
     const [profile, orderList, addressList, favoriteList] = await Promise.all([
-      apiFetch("/account/profile"), apiFetch("/account/orders"), apiFetch("/account/addresses"), apiFetch("/account/favorites"),
+      apiFetch<SessionUser>("/account/profile"),
+      apiFetch<AccountOrder[]>("/account/orders"),
+      apiFetch<SavedAddress[]>("/account/addresses"),
+      apiFetch<Product[]>("/account/favorites"),
     ]);
     setUser(profile);
     setProfileForm({ name: profile.name, phone: profile.phone, marketingOptIn: profile.marketingOptIn });
@@ -83,7 +77,7 @@ export default function AccountArea() {
 
   async function bootstrap() {
     try {
-      const { user: sessionUser } = await apiFetch("/auth/me");
+      const { user: sessionUser } = await apiFetch<{ user: SessionUser | null }>("/auth/me");
       if (sessionUser) {
         setUser(sessionUser);
         setAddressForm({ ...emptyAddress, recipientName: sessionUser.name });
@@ -138,7 +132,7 @@ export default function AccountArea() {
       return;
     }
     try {
-      const { user: signedInUser } = await apiFetch(`/auth/${mode}`, {
+      const { user: signedInUser } = await apiFetch<{ user: SessionUser }>(`/auth/${mode}`, {
         method: "POST",
         body: JSON.stringify({ name: String(form.get("name") ?? ""), email: String(form.get("email") ?? ""), password }),
       });
@@ -192,7 +186,7 @@ export default function AccountArea() {
         method: editingAddressId ? "PATCH" : "POST",
         body: JSON.stringify(addressForm),
       });
-      setAddresses(await apiFetch("/account/addresses"));
+      setAddresses(await apiFetch<SavedAddress[]>("/account/addresses"));
       setNotice(editingAddressId ? "Dirección actualizada" : "Dirección guardada");
       resetAddressEditor();
     } catch (addressError) {
@@ -207,7 +201,7 @@ export default function AccountArea() {
     setError("");
     try {
       await apiFetch(`/account/addresses/${address.id}`, { method: "DELETE" });
-      setAddresses(await apiFetch("/account/addresses"));
+      setAddresses(await apiFetch<SavedAddress[]>("/account/addresses"));
       if (editingAddressId === address.id) resetAddressEditor();
       setNotice("Dirección eliminada");
       setAddressToDelete(null);
@@ -222,7 +216,7 @@ export default function AccountArea() {
   async function makeDefault(address: SavedAddress) {
     try {
       await apiFetch(`/account/addresses/${address.id}`, { method: "PATCH", body: JSON.stringify({ ...address, isDefault: true }) });
-      setAddresses(await apiFetch("/account/addresses"));
+      setAddresses(await apiFetch<SavedAddress[]>("/account/addresses"));
       setNotice("Dirección predeterminada actualizada");
     } catch (addressError) {
       setError(addressError instanceof Error ? addressError.message : "No se pudo actualizar la dirección.");
@@ -286,7 +280,7 @@ export default function AccountArea() {
     setLoading(true);
     setError("");
     try {
-      const profile = await apiFetch("/account/profile", {
+      const profile = await apiFetch<SessionUser>("/account/profile", {
         method: "PATCH",
         body: JSON.stringify(profileForm),
       });

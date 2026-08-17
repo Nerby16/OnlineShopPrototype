@@ -17,7 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const incomingHeaders = await headers();
   const host = incomingHeaders.get("x-forwarded-host") ?? incomingHeaders.get("host") ?? "localhost:3000";
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
-  const baseUrl = `${protocol}://${host}`;
+  const configuredOrigin = String(process.env.SITE_PUBLIC_ORIGIN ?? "").trim();
+  const baseUrl = configuredOrigin ? new URL(configuredOrigin).origin : `${protocol}://${host}`;
   const title = "Lúmina — Objetos con carácter";
   const description = "Tienda de diseño sereno para la casa y para cada día.";
 

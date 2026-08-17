@@ -3,11 +3,13 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import { API_URL, money } from "../../../../lib/products";
+import { useApi } from "../../../../hooks/use-api";
+import { money } from "../../../../lib/products";
 import OrderTimeline from "../../../order-timeline";
 import { orderStatusLabels, type OrderDetail } from "../../../order-types";
 
 export default function CustomerOrderDetail({ orderId }: { orderId: number }) {
+  const apiFetch = useApi();
   const invalidOrderId = !Number.isInteger(orderId) || orderId < 1;
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(!invalidOrderId);
@@ -16,18 +18,14 @@ export default function CustomerOrderDetail({ orderId }: { orderId: number }) {
   useEffect(() => {
     if (invalidOrderId) return;
     const controller = new AbortController();
-    fetch(`${API_URL}/account/orders/${orderId}`, { credentials: "include", signal: controller.signal })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(response.status === 401 ? "Inicia sesión para consultar este pedido." : data.error);
-        setOrder(data);
-      })
+    apiFetch<OrderDetail>(`/account/orders/${orderId}`, { signal: controller.signal })
+      .then(setOrder)
       .catch((fetchError) => {
         if (fetchError.name !== "AbortError") setError(fetchError instanceof Error ? fetchError.message : "No se pudo cargar el pedido.");
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
-  }, [invalidOrderId, orderId]);
+  }, [apiFetch, invalidOrderId, orderId]);
 
   if (loading) return <main className="order-detail-loading"><a className="brand" href="/">LÚMINA</a><p>Preparando los detalles del pedido…</p></main>;
 

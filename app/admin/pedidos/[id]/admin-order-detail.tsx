@@ -3,13 +3,15 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { FormEvent, useEffect, useState } from "react";
-import { API_URL, money } from "../../../../lib/products";
+import { useApi } from "../../../../hooks/use-api";
+import { money } from "../../../../lib/products";
 import OrderTimeline from "../../../order-timeline";
 import { orderStatusLabels, type OrderDetail, type OrderStatus } from "../../../order-types";
 
 type SessionUser = { id: number; email: string; name: string; role: "customer" | "admin" };
 
 export default function AdminOrderDetail({ orderId }: { orderId: number }) {
+  const apiFetch = useApi();
   const invalidOrderId = !Number.isInteger(orderId) || orderId < 1;
   const [user, setUser] = useState<SessionUser | null>(null);
   const [order, setOrder] = useState<OrderDetail | null>(null);
@@ -20,17 +22,6 @@ export default function AdminOrderDetail({ orderId }: { orderId: number }) {
   const [error, setError] = useState(invalidOrderId ? "El pedido solicitado no es válido." : "");
   const [notice, setNotice] = useState("");
 
-  async function apiFetch(path: string, options: RequestInit = {}) {
-    const response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error ?? "No se pudo completar la operación.");
-    return data;
-  }
-
   async function loadOrder() {
     const data: OrderDetail = await apiFetch(`/admin/orders/${orderId}`);
     setOrder(data);
@@ -40,7 +31,7 @@ export default function AdminOrderDetail({ orderId }: { orderId: number }) {
 
   useEffect(() => {
     if (invalidOrderId) return;
-    apiFetch("/auth/me")
+    apiFetch<{ user: SessionUser | null }>("/auth/me")
       .then(async ({ user: sessionUser }) => {
         if (sessionUser?.role !== "admin") throw new Error("Inicia sesión como administrador para consultar este pedido.");
         setUser(sessionUser);
@@ -70,7 +61,7 @@ export default function AdminOrderDetail({ orderId }: { orderId: number }) {
     setSaving(true);
     setError("");
     try {
-      const data = await apiFetch(`/admin/orders/${orderId}/tracking`, {
+      const data = await apiFetch<OrderDetail>(`/admin/orders/${orderId}/tracking`, {
         method: "PATCH",
         body: JSON.stringify({ trackingNumber, trackingUrl }),
       });

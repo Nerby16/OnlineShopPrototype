@@ -11,8 +11,6 @@ export type Product = {
   active?: boolean;
 };
 
-export const API_URL = "http://localhost:3001/api";
-
 export const FALLBACK_PRODUCTS: Product[] = [
   {
     id: 1,

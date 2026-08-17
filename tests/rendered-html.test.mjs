@@ -183,3 +183,28 @@ test("hashes credentials, rejects malformed hashes and protects session cookies"
     /HttpOnly; SameSite=Strict; Path=\/; Max-Age=3600; Priority=High/,
   );
 });
+
+test("centralizes API URLs and reusable client hooks", async () => {
+  const [apiClient, sessionHook, cartHook, storefront, products, envExample, server] = await Promise.all([
+    readFile(new URL("../lib/api.ts", import.meta.url), "utf8"),
+    readFile(new URL("../hooks/use-session.ts", import.meta.url), "utf8"),
+    readFile(new URL("../hooks/use-cart.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/storefront.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/products.ts", import.meta.url), "utf8"),
+    readFile(new URL("../.env.example", import.meta.url), "utf8"),
+    readFile(new URL("../server/index.mjs", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(apiClient, /VITE_API_BASE_URL/);
+  assert.match(apiClient, /credentials: "include"/);
+  assert.match(sessionHook, /export function useSession/);
+  assert.match(cartHook, /export function useCart/);
+  assert.match(cartHook, /normalizeCart/);
+  assert.match(storefront, /useSession\(\)/);
+  assert.match(storefront, /useCart\(\)/);
+  assert.doesNotMatch(storefront, /http:\/\/localhost:3001/);
+  assert.doesNotMatch(products, /API_URL/);
+  assert.match(envExample, /SITE_PUBLIC_ORIGIN=/);
+  assert.match(envExample, /VITE_API_BASE_URL=/);
+  assert.match(server, /url\.protocol !== "https:"/);
+});

@@ -3,7 +3,8 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
-import { API_URL, money } from "../../../../lib/products";
+import { useApi } from "../../../../hooks/use-api";
+import { money } from "../../../../lib/products";
 
 type SessionUser = { id: number; email: string; name: string; role: "customer" | "admin" };
 type OrderStatus = "pending" | "paid" | "shipped" | "cancelled";
@@ -35,6 +36,7 @@ const emptyPagination: Pagination = { page: 1, pageSize: 8, total: 0, pages: 1 }
 const dateFormatter = new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" });
 
 export default function AdminCustomerDetail({ customerId }: { customerId: number }) {
+  const apiFetch = useApi();
   const invalidCustomerId = !Number.isInteger(customerId) || customerId < 1;
   const [user, setUser] = useState<SessionUser | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -53,17 +55,6 @@ export default function AdminCustomerDetail({ customerId }: { customerId: number
   const [notice, setNotice] = useState("");
   const [statusDialog, setStatusDialog] = useState(false);
   const safeActionRef = useRef<HTMLButtonElement>(null);
-
-  async function apiFetch(path: string, options: RequestInit = {}) {
-    const response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: { "Content-Type": "application/json", ...(options.headers ?? {}) },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error ?? "No se pudo completar la operación.");
-    return data;
-  }
 
   function queryString() {
     const params = new URLSearchParams({ page: String(page), pageSize: "8" });
@@ -85,7 +76,7 @@ export default function AdminCustomerDetail({ customerId }: { customerId: number
 
   useEffect(() => {
     if (invalidCustomerId) return;
-    apiFetch("/auth/me")
+    apiFetch<{ user: SessionUser | null }>("/auth/me")
       .then(({ user: sessionUser }) => {
         if (sessionUser?.role !== "admin") throw new Error("Inicia sesión como administrador para consultar este cliente.");
         setUser(sessionUser);
@@ -94,7 +85,7 @@ export default function AdminCustomerDetail({ customerId }: { customerId: number
         setError(loadError instanceof Error ? loadError.message : "No se pudo comprobar la sesión.");
         setLoading(false);
       });
-  }, [customerId, invalidCustomerId]);
+  }, [apiFetch, customerId, invalidCustomerId]);
 
   useEffect(() => {
     if (!user) return;
