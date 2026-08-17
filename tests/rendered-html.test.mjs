@@ -1,0 +1,172 @@
+import assert from "node:assert/strict";
+import { access, readFile, stat } from "node:fs/promises";
+import test from "node:test";
+
+async function render(pathname = "/") {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+
+  return worker.fetch(
+    new Request(`http://localhost${pathname}`, {
+      headers: { accept: "text/html" },
+    }),
+    {
+      ASSETS: {
+        fetch: async () => new Response("Not found", { status: 404 }),
+      },
+    },
+    {
+      waitUntil() {},
+      passThroughOnException() {},
+    },
+  );
+}
+
+test("server-renders the Lúmina storefront and social metadata", async () => {
+  const response = await render();
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+
+  const html = await response.text();
+  assert.match(html, /<html lang="es">/i);
+  assert.match(html, /<title>Lúmina — Objetos con carácter<\/title>/i);
+  assert.match(html, /Objetos que <em>cambian<\/em> el ritmo\./i);
+  assert.match(html, /Sillón Lino 01/);
+  assert.match(html, /Cerámica Aura/);
+  assert.match(html, /Bolso Senda/);
+  assert.match(html, /property="og:image" content="http:\/\/localhost(?::3000)?\/og\.png"/i);
+  assert.match(html, /name="twitter:card" content="summary_large_image"/i);
+  assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/i);
+});
+
+test("renders product records with route-specific social metadata", async () => {
+  for (const product of [
+    { slug: "sillon-lino-01", name: "Sillón Lino 01", imageId: "photo-1503602642458-232111445657" },
+    { slug: "reloj-nodo", name: "Reloj Nodo", imageId: "photo-1524592094714-0f0654e20314" },
+  ]) {
+    const response = await render(`/productos/${product.slug}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, new RegExp(`<title>${product.name} — Lúmina<\\/title>`));
+    assert.match(html, new RegExp(`property="og:title" content="${product.name} — Lúmina"`));
+    assert.match(html, new RegExp(`property="og:image" content="[^"]*${product.imageId}`));
+    assert.match(html, new RegExp(`name="twitter:title" content="${product.name} — Lúmina"`));
+    assert.doesNotMatch(html, /property="og:image" content="[^"]*\/og\.png"/i);
+  }
+});
+
+test("renders checkout, customer account and protected administration surfaces", async () => {
+  const [checkoutResponse, accountResponse, adminResponse, customerOrderResponse, adminOrderResponse, adminCustomerResponse] = await Promise.all([
+    render("/checkout"),
+    render("/cuenta"),
+    render("/admin"),
+    render("/cuenta/pedidos/8"),
+    render("/admin/pedidos/8"),
+    render("/admin/clientes/4"),
+  ]);
+  assert.equal(checkoutResponse.status, 200);
+  assert.equal(accountResponse.status, 200);
+  assert.equal(adminResponse.status, 200);
+  assert.equal(customerOrderResponse.status, 200);
+  assert.equal(adminOrderResponse.status, 200);
+  assert.equal(adminCustomerResponse.status, 200);
+  const [checkoutHtml, accountHtml, adminHtml, customerOrderHtml, adminOrderHtml, adminCustomerHtml] = await Promise.all([
+    checkoutResponse.text(),
+    accountResponse.text(),
+    adminResponse.text(),
+    customerOrderResponse.text(),
+    adminOrderResponse.text(),
+    adminCustomerResponse.text(),
+  ]);
+  assert.match(checkoutHtml, /<title>Finalizar compra — Lúmina<\/title>/i);
+  assert.match(checkoutHtml, /Checkout seguro/);
+  assert.match(accountHtml, /<title>Mi cuenta — Lúmina<\/title>/i);
+  assert.match(accountHtml, /Preparando tu espacio personal/);
+  assert.match(adminHtml, /<title>Estudio — Administración de Lúmina<\/title>/i);
+  assert.match(adminHtml, /Acceso de administración/);
+  assert.match(customerOrderHtml, /<title>Detalle del pedido — Lúmina<\/title>/i);
+  assert.match(customerOrderHtml, /Preparando los detalles del pedido/);
+  assert.match(adminOrderHtml, /<title>Pedido — Administración de Lúmina<\/title>/i);
+  assert.match(adminOrderHtml, /Abriendo el pedido en el estudio/);
+  assert.match(adminCustomerHtml, /<title>Cliente — Administración de Lúmina<\/title>/i);
+  assert.match(adminCustomerHtml, /Preparando la ficha del cliente/);
+});
+
+test("includes the local MySQL data layer and seeded schema", async () => {
+  const [schema, server, auth, packageJson, socialImage, adminDashboard, accountArea] = await Promise.all([
+    readFile(new URL("../database/schema.sql", import.meta.url), "utf8"),
+    readFile(new URL("../server/index.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../server/auth.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+    stat(new URL("../public/og.png", import.meta.url)),
+    readFile(new URL("../app/admin/admin-dashboard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/cuenta/account.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS products/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS orders/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS order_items/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS users/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS sessions/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS addresses/i);
+  assert.match(schema, /CREATE TABLE IF NOT EXISTS favorites/i);
+  assert.match(schema, /user_id BIGINT UNSIGNED NULL/i);
+  assert.match(schema, /tracking_number VARCHAR\(80\)/i);
+  assert.match(schema, /phone VARCHAR\(30\)/i);
+  assert.match(schema, /marketing_opt_in TINYINT\(1\)/i);
+  assert.match(schema, /customer_phone VARCHAR\(30\)/i);
+  assert.match(schema, /shipped_at TIMESTAMP NULL/i);
+  assert.match(schema, /INSERT INTO products/i);
+  assert.match(server, /from "mysql2\/promise"/);
+  assert.match(server, /url\.pathname === "\/api\/products"/);
+  assert.match(server, /url\.pathname === "\/api\/orders"/);
+  assert.match(server, /beginTransaction\(\)/);
+  assert.match(server, /FOR UPDATE/);
+  assert.match(server, /\/api\/auth\/register/);
+  assert.match(server, /\/api\/auth\/login/);
+  assert.match(server, /\/api\/account\/orders/);
+  assert.match(server, /\/api\/account\/addresses/);
+  assert.match(server, /\/api\/account\/favorites/);
+  assert.match(server, /\/api\/account\/password/);
+  assert.match(server, /\/api\/account\/profile/);
+  assert.match(server, /\/api\/admin\/uploads/);
+  assert.match(server, /\/api\/admin\/analytics/);
+  assert.match(server, /\/api\/admin\/customers/);
+  assert.match(server, /adminCustomerStatusMatch/);
+  assert.match(server, /paginatedPayload/);
+  assert.match(server, /\/restore/);
+  assert.match(server, /getOrderDetails/);
+  assert.match(server, /\/tracking/);
+  assert.match(server, /stock = stock \+ \?/);
+  assert.match(server, /\/api\/admin\/products/);
+  assert.match(server, /requireUser\(request, "admin"\)/);
+  assert.match(auth, /scrypt/);
+  assert.match(auth, /HttpOnly/);
+  assert.match(auth, /SameSite=Lax/);
+  assert.match(packageJson, /"api": "node --env-file-if-exists=\.env server\/index\.mjs"/);
+  assert.match(packageJson, /"mysql2":/);
+  assert.match(packageJson, /"db:seed-demo":/);
+  assert.ok(socialImage.size > 100_000);
+  assert.doesNotMatch(adminDashboard, /window\.confirm/);
+  assert.doesNotMatch(accountArea, /window\.confirm/);
+  await access(new URL("../.env.example", import.meta.url));
+});
+
+test("validates uploaded image signatures instead of trusting file extensions", async () => {
+  const { detectImageType, MAX_IMAGE_BYTES } = await import("../server/uploads.mjs");
+  assert.equal(detectImageType(Buffer.from([0xff, 0xd8, 0xff, 0x00]))?.mime, "image/jpeg");
+  assert.equal(detectImageType(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))?.extension, "png");
+  assert.equal(detectImageType(Buffer.from("RIFF0000WEBP"))?.extension, "webp");
+  assert.equal(detectImageType(Buffer.from("esto no es una imagen")), null);
+  assert.equal(MAX_IMAGE_BYTES, 5 * 1024 * 1024);
+});
+
+test("hashes credentials and produces protected session cookies", async () => {
+  const { hashPassword, verifyPassword, sessionCookie } = await import("../server/auth.mjs");
+  const hash = await hashPassword("contraseña-segura-2026");
+  assert.notEqual(hash, "contraseña-segura-2026");
+  assert.equal(await verifyPassword("contraseña-segura-2026", hash), true);
+  assert.equal(await verifyPassword("contraseña-incorrecta", hash), false);
+  assert.match(sessionCookie("token-de-prueba", 3600), /HttpOnly; SameSite=Lax; Path=\/; Max-Age=3600/);
+});
