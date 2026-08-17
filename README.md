@@ -5,7 +5,7 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
 ![CI](https://github.com/Nerby16/OnlineShopPrototype/actions/workflows/ci.yml/badge.svg)
 
-Prototipo full-stack de comercio electrónico multiespecie. El proyecto demuestra
+Prototipo full-stack de comercio electrónico. El proyecto demuestra
 un recorrido completo de compra, cuentas de cliente, gestión administrativa,
 persistencia en MySQL y una API protegida, manteniendo una interfaz adaptable a
 otros catálogos y modelos de tienda.
