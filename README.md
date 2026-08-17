@@ -3,7 +3,7 @@
 ![Estado del proyecto](https://img.shields.io/badge/estado-prototipo%20estable-304a40)
 ![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
-![CI](https://github.com/Nerby16/nexo-animal-store-prototype/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Nerby16/OnlineShopPrototype/actions/workflows/ci.yml/badge.svg)
 
 Prototipo full-stack de comercio electrónico multiespecie. El proyecto demuestra
 un recorrido completo de compra, cuentas de cliente, gestión administrativa,
@@ -79,8 +79,8 @@ facilitando una futura migración a Supabase sin rehacer todas las pantallas.
 ### 1. Preparar el proyecto
 
 ```bash
-git clone https://github.com/Nerby16/nexo-animal-store-prototype.git
-cd nexo-animal-store-prototype
+git clone https://github.com/Nerby16/OnlineShopPrototype.git
+cd OnlineShopPrototype
 npm install
 ```
 
