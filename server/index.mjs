@@ -16,7 +16,8 @@ import {
 import { detectImageType, imageTypeFromFilename, MAX_IMAGE_BYTES } from "./uploads.mjs";
 
 const port = Number(process.env.API_PORT ?? 3001);
-const allowedOrigin = process.env.FRONTEND_ORIGIN ?? "http://localhost:3000";
+const allowedOrigin = normalizeConfiguredOrigin(process.env.FRONTEND_ORIGIN ?? "http://localhost:3000", "FRONTEND_ORIGIN");
+const apiPublicOrigin = normalizeConfiguredOrigin(process.env.API_PUBLIC_ORIGIN ?? `http://127.0.0.1:${port}`, "API_PUBLIC_ORIGIN");
 const adminEmail = String(process.env.ADMIN_EMAIL ?? "admin@lumina.local").trim().toLowerCase();
 const adminPassword = process.env.ADMIN_PASSWORD ?? process.env.ADMIN_TOKEN ?? "";
 const secureCookies = process.env.NODE_ENV === "production";
@@ -35,6 +36,29 @@ const pool = mysql.createPool({
 });
 
 const loginAttempts = new Map();
+const requestLimits = new Map();
+const dummyPasswordHash = `scrypt$${"0".repeat(32)}$${"0".repeat(128)}`;
+
+function normalizeConfiguredOrigin(value, settingName) {
+  try {
+    const url = new URL(String(value));
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error();
+    return url.origin;
+  } catch {
+    throw new Error(`${settingName} debe ser un origen HTTP o HTTPS válido.`);
+  }
+}
+
+function apiSecurityHeaders() {
+  return {
+    "Cache-Control": "no-store",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+  };
+}
 
 function corsHeaders() {
   return {
@@ -42,12 +66,14 @@ function corsHeaders() {
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Max-Age": "600",
     Vary: "Origin",
   };
 }
 
 function sendJson(response, status, payload, extraHeaders = {}) {
   response.writeHead(status, {
+    ...apiSecurityHeaders(),
     ...corsHeaders(),
     "Content-Type": "application/json; charset=utf-8",
     ...extraHeaders,
@@ -62,6 +88,8 @@ function httpError(status, message) {
 }
 
 async function readJson(request) {
+  const contentType = String(request.headers["content-type"] ?? "").split(";", 1)[0].trim().toLowerCase();
+  if (contentType !== "application/json") throw httpError(415, "La solicitud debe usar contenido JSON.");
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
@@ -172,8 +200,8 @@ function validateEmail(value) {
 
 function validatePassword(value) {
   const password = String(value ?? "");
-  if (password.length < 8 || password.length > 128) {
-    throw httpError(400, "La contraseña debe tener entre 8 y 128 caracteres.");
+  if (password.length < 12 || password.length > 128) {
+    throw httpError(400, "La contraseña debe tener entre 12 y 128 caracteres.");
   }
   return password;
 }
@@ -205,7 +233,7 @@ function validateAddress(input) {
   if (address.recipientName.length < 2 || address.recipientName.length > 120) throw httpError(400, "El destinatario no es válido.");
   if (address.addressLine.length < 5 || address.addressLine.length > 220) throw httpError(400, "La dirección no es válida.");
   if (address.city.length < 2 || address.city.length > 100) throw httpError(400, "La ciudad no es válida.");
-  if (address.postalCode.length < 4 || address.postalCode.length > 20) throw httpError(400, "El código postal no es válido.");
+  if (!/^[0-9A-Za-z -]{4,20}$/.test(address.postalCode)) throw httpError(400, "El código postal no es válido.");
   return address;
 }
 
@@ -248,7 +276,31 @@ function normalizeAddress(row) {
 function assertAllowedOrigin(request) {
   if (["GET", "HEAD", "OPTIONS"].includes(request.method ?? "GET")) return;
   const origin = request.headers.origin;
-  if (origin && origin !== allowedOrigin) throw httpError(403, "Origen de la solicitud no permitido.");
+  if (origin === allowedOrigin) return;
+  if (origin || readCookie(request, "lumina_session")) {
+    throw httpError(403, "Origen de la solicitud no permitido.");
+  }
+}
+
+function requestAddress(request) {
+  return request.socket.remoteAddress ?? "local";
+}
+
+function consumeRequestLimit(request, scope, limit, windowMs, message) {
+  const now = Date.now();
+  if (requestLimits.size > 5_000) {
+    for (const [key, entry] of requestLimits) {
+      if (entry.resetAt <= now) requestLimits.delete(key);
+    }
+    while (requestLimits.size > 5_000) requestLimits.delete(requestLimits.keys().next().value);
+  }
+  const key = `${scope}:${requestAddress(request)}`;
+  const current = requestLimits.get(key);
+  const entry = !current || current.resetAt <= now
+    ? { count: 0, resetAt: now + windowMs }
+    : current;
+  if (entry.count >= limit) throw httpError(429, message);
+  requestLimits.set(key, { ...entry, count: entry.count + 1 });
 }
 
 function loginAttemptKey(request, email) {
@@ -266,6 +318,13 @@ function assertLoginAllowed(key) {
 }
 
 function recordLoginFailure(key) {
+  if (loginAttempts.size > 5_000) {
+    const now = Date.now();
+    for (const [attemptKey, attempt] of loginAttempts) {
+      if (attempt.resetAt <= now) loginAttempts.delete(attemptKey);
+    }
+    while (loginAttempts.size > 5_000) loginAttempts.delete(loginAttempts.keys().next().value);
+  }
   const current = loginAttempts.get(key);
   loginAttempts.set(key, {
     count: (current?.count ?? 0) + 1,
@@ -277,6 +336,11 @@ async function createSessionForUser(userId) {
   const { token, tokenHash } = createSessionToken();
   const expiresAt = new Date(Date.now() + sessionDurationSeconds * 1000);
   await pool.execute("DELETE FROM sessions WHERE expires_at <= NOW()");
+  const [sessionCounts] = await pool.execute("SELECT COUNT(*) AS total FROM sessions WHERE user_id = ?", [userId]);
+  const excessSessions = Math.max(0, Number(sessionCounts[0].total) - 9);
+  if (excessSessions) {
+    await pool.execute(`DELETE FROM sessions WHERE user_id = ? ORDER BY created_at ASC LIMIT ${excessSessions}`, [userId]);
+  }
   await pool.execute(
     "INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)",
     [tokenHash, userId, expiresAt],
@@ -323,15 +387,21 @@ async function requireUser(request, role) {
 
 async function ensureAdminUser() {
   if (!adminPassword) {
+    if (secureCookies) throw new Error("ADMIN_PASSWORD es obligatoria en producción.");
     console.warn("ADMIN_PASSWORD no está configurada; no se creará la cuenta administrativa inicial.");
     return;
+  }
+  if (secureCookies && ["change-this-local-password", "lumina-estudio-local"].includes(adminPassword)) {
+    throw new Error("ADMIN_PASSWORD debe cambiarse antes de iniciar la aplicación en producción.");
   }
   validateEmail(adminEmail);
   validatePassword(adminPassword);
 
   const [rows] = await pool.execute("SELECT id, role FROM users WHERE email = ? LIMIT 1", [adminEmail]);
   if (rows[0]) {
-    if (rows[0].role !== "admin") await pool.execute("UPDATE users SET role = 'admin' WHERE id = ?", [rows[0].id]);
+    if (rows[0].role !== "admin") {
+      throw new Error("ADMIN_EMAIL ya pertenece a una cuenta de cliente; resuélvelo manualmente antes de continuar.");
+    }
     return;
   }
 
@@ -360,7 +430,9 @@ async function createOrder(payload, sessionUser = null) {
   const city = String(customer.city ?? "").trim();
   const postalCode = String(customer.postalCode ?? "").trim();
 
-  if (address.length < 5 || city.length < 2 || postalCode.length < 4) throw httpError(400, "Completa la dirección de entrega.");
+  if (address.length < 5 || address.length > 220) throw httpError(400, "La dirección de entrega no es válida.");
+  if (city.length < 2 || city.length > 100) throw httpError(400, "La ciudad no es válida.");
+  if (!/^[0-9A-Za-z -]{4,20}$/.test(postalCode)) throw httpError(400, "El código postal no es válido.");
   if (!Array.isArray(payload.items) || payload.items.length === 0) throw httpError(400, "La cesta está vacía.");
 
   const combined = new Map();
@@ -671,12 +743,12 @@ async function saveAddress(userId, input, addressId = null) {
 
 const server = createServer(async (request, response) => {
   if (request.method === "OPTIONS") {
-    response.writeHead(204, corsHeaders());
+    response.writeHead(204, { ...apiSecurityHeaders(), ...corsHeaders() });
     response.end();
     return;
   }
 
-  const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
+  const url = new URL(request.url ?? "/", apiPublicOrigin);
 
   try {
     assertAllowedOrigin(request);
@@ -700,6 +772,7 @@ const server = createServer(async (request, response) => {
         throw error;
       }
       response.writeHead(200, {
+        ...apiSecurityHeaders(),
         ...corsHeaders(),
         "Cache-Control": "public, max-age=31536000, immutable",
         "Content-Length": image.length,
@@ -711,6 +784,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/auth/register") {
+      consumeRequestLimit(request, "register", 8, 60 * 60 * 1000, "Demasiados registros desde este equipo. Inténtalo más tarde.");
       const input = await readJson(request);
       const name = validateName(input.name);
       const email = validateEmail(input.email);
@@ -731,6 +805,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/auth/login") {
+      consumeRequestLimit(request, "login", 30, 15 * 60 * 1000, "Demasiados intentos de acceso. Espera 15 minutos.");
       const input = await readJson(request);
       const email = validateEmail(input.email);
       const password = String(input.password ?? "");
@@ -744,7 +819,8 @@ const server = createServer(async (request, response) => {
         LIMIT 1
       `, [email]);
       const row = rows[0];
-      if (!row || !(await verifyPassword(password, row.password_hash))) {
+      const passwordMatches = await verifyPassword(password, row?.password_hash ?? dummyPasswordHash);
+      if (!row || !passwordMatches) {
         recordLoginFailure(attemptKey);
         throw httpError(401, "Correo o contraseña incorrectos.");
       }
@@ -782,7 +858,8 @@ const server = createServer(async (request, response) => {
       const input = await readJson(request);
       const name = validateName(input.name);
       const phone = validatePhone(input.phone);
-      const marketingOptIn = Boolean(input.marketingOptIn);
+      if (typeof input.marketingOptIn !== "boolean") throw httpError(400, "La preferencia de comunicaciones no es válida.");
+      const marketingOptIn = input.marketingOptIn;
       await pool.execute(`
         UPDATE users SET name = ?, phone = ?, marketing_opt_in = ?
         WHERE id = ? AND active = 1
@@ -879,6 +956,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/account/password") {
+      consumeRequestLimit(request, "password-change", 8, 60 * 60 * 1000, "Demasiados cambios de contraseña. Inténtalo más tarde.");
       const user = await requireUser(request);
       const input = await readJson(request);
       const currentPassword = String(input.currentPassword ?? "");
@@ -923,6 +1001,7 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "POST" && url.pathname === "/api/orders") {
+      consumeRequestLimit(request, "orders", 20, 60 * 60 * 1000, "Se han creado demasiados pedidos desde este equipo. Inténtalo más tarde.");
       const result = await createOrder(await readJson(request), await getSessionUser(request));
       sendJson(response, 201, result);
       return;
@@ -940,8 +1019,7 @@ const server = createServer(async (request, response) => {
       await mkdir(uploadDirectory, { recursive: true });
       const filename = `${randomUUID()}.${detectedType.extension}`;
       await writeFile(path.join(uploadDirectory, filename), image, { flag: "wx" });
-      const origin = `http://${request.headers.host ?? `127.0.0.1:${port}`}`;
-      sendJson(response, 201, { url: `${origin}/api/uploads/${filename}` });
+      sendJson(response, 201, { url: `${apiPublicOrigin}/api/uploads/${filename}` });
       return;
     }
 

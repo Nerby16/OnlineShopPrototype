@@ -1,6 +1,10 @@
 import mysql from "mysql2/promise";
 import { hashPassword } from "../server/auth.mjs";
 
+if (process.env.NODE_ENV === "production") {
+  throw new Error("La cuenta de demostración no puede generarse en producción.");
+}
+
 const demoEmail = "cliente@lumina.local";
 const demoPassword = "lumina-cliente-2026";
 

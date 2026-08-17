@@ -75,6 +75,28 @@ En Visual Studio Code también puedes pulsar `Ctrl + Shift + B` para iniciar la
 tienda y la API conjuntamente con la versión correcta de Node incluida en
 Laragon.
 
+## Seguridad aplicada
+
+- Contraseñas de al menos 12 caracteres almacenadas con `scrypt` y sal aleatoria.
+- Cookies de sesión `HttpOnly`, `SameSite=Strict`, con prioridad alta y atributo
+  `Secure` al ejecutarse en producción.
+- Límites de intentos por IP y por cuenta en registro, acceso, cambio de contraseña
+  y creación de pedidos.
+- Validación del origen, del tipo `application/json` y de todos los datos recibidos
+  por la API.
+- Consultas MySQL parametrizadas, transacciones en checkout y comprobación del
+  stock en el servidor.
+- Cabeceras contra clickjacking, interpretación de contenido y fuga de referencias.
+- Imágenes de producto limitadas a 5 MB, reservadas al administrador y validadas
+  por su firma binaria.
+- La cuenta administrativa inicial exige una contraseña explícita y rechaza las
+  credenciales locales de ejemplo en producción.
+
+Este endurecimiento reduce riesgos conocidos, pero el prototipo no debe exponerse
+como comercio real todavía. Antes de producción faltan recuperación y verificación
+de correo, una limitación de tráfico compartida entre servidores, pago real y una
+auditoría nueva después de migrar la autenticación y los datos a Supabase.
+
 ## Rutas principales
 
 - `/`: escaparate y catálogo.
@@ -93,7 +115,8 @@ Laragon.
 - Contraseña: `lumina-cliente-2026`
 
 El generador es idempotente por estado: conserva los pedidos existentes y solo
-añade los ejemplos pendiente, preparando o enviado que falten.
+añade los ejemplos pendiente, preparando o enviado que falten. Por seguridad se
+niega a ejecutarse cuando `NODE_ENV=production`.
 
 ## Archivos subidos
 
@@ -103,7 +126,7 @@ entorno publicado debe sustituirse por almacenamiento de objetos persistente.
 
 ## Siguiente iteración sugerida
 
-Auditoría de seguridad completa, recuperación de contraseña y verificación de
-correo mediante un proveedor de email, pasarela de pago y una suite de pruebas
-de navegador. Si el proyecto se publica, la arquitectura permite migrar en una
-iteración independiente de MySQL local a PostgreSQL, Auth y Storage de Supabase.
+Migración independiente de MySQL local a PostgreSQL, Auth y Storage de Supabase,
+incluyendo políticas RLS y una nueva auditoría. Después: recuperación de contraseña,
+verificación de correo, pasarela de pago y pruebas de navegador de los recorridos
+críticos.

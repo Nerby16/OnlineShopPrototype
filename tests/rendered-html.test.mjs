@@ -27,6 +27,10 @@ test("server-renders the Lúmina storefront and social metadata", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("x-frame-options"), "DENY");
+  assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+  assert.match(response.headers.get("permissions-policy") ?? "", /camera=\(\)/);
 
   const html = await response.text();
   assert.match(html, /<html lang="es">/i);
@@ -141,9 +145,13 @@ test("includes the local MySQL data layer and seeded schema", async () => {
   assert.match(server, /stock = stock \+ \?/);
   assert.match(server, /\/api\/admin\/products/);
   assert.match(server, /requireUser\(request, "admin"\)/);
+  assert.match(server, /API_PUBLIC_ORIGIN/);
+  assert.match(server, /consumeRequestLimit/);
+  assert.match(server, /dummyPasswordHash/);
+  assert.match(server, /application\/json/);
   assert.match(auth, /scrypt/);
   assert.match(auth, /HttpOnly/);
-  assert.match(auth, /SameSite=Lax/);
+  assert.match(auth, /SameSite=Strict/);
   assert.match(packageJson, /"api": "node --env-file-if-exists=\.env server\/index\.mjs"/);
   assert.match(packageJson, /"mysql2":/);
   assert.match(packageJson, /"db:seed-demo":/);
@@ -162,11 +170,16 @@ test("validates uploaded image signatures instead of trusting file extensions", 
   assert.equal(MAX_IMAGE_BYTES, 5 * 1024 * 1024);
 });
 
-test("hashes credentials and produces protected session cookies", async () => {
-  const { hashPassword, verifyPassword, sessionCookie } = await import("../server/auth.mjs");
+test("hashes credentials, rejects malformed hashes and protects session cookies", async () => {
+  const { hashPassword, verifyPassword, readCookie, sessionCookie } = await import("../server/auth.mjs");
   const hash = await hashPassword("contraseña-segura-2026");
   assert.notEqual(hash, "contraseña-segura-2026");
   assert.equal(await verifyPassword("contraseña-segura-2026", hash), true);
   assert.equal(await verifyPassword("contraseña-incorrecta", hash), false);
-  assert.match(sessionCookie("token-de-prueba", 3600), /HttpOnly; SameSite=Lax; Path=\/; Max-Age=3600/);
+  assert.equal(await verifyPassword("cualquier-clave", "scrypt$mal$formado"), false);
+  assert.equal(readCookie({ headers: { cookie: "lumina_session=%E0%A4%A" } }, "lumina_session"), null);
+  assert.match(
+    sessionCookie("token-de-prueba", 3600),
+    /HttpOnly; SameSite=Strict; Path=\/; Max-Age=3600; Priority=High/,
+  );
 });

@@ -11,7 +11,11 @@ export async function hashPassword(password) {
 
 export async function verifyPassword(password, storedHash) {
   const [algorithm, salt, expectedHex] = String(storedHash).split("$");
-  if (algorithm !== "scrypt" || !salt || !expectedHex) return false;
+  if (
+    algorithm !== "scrypt"
+    || !/^[a-f0-9]{32}$/i.test(salt ?? "")
+    || !/^[a-f0-9]{128}$/i.test(expectedHex ?? "")
+  ) return false;
 
   const expected = Buffer.from(expectedHex, "hex");
   const actual = Buffer.from(await scryptAsync(password, salt, expected.length));
@@ -33,7 +37,13 @@ export function readCookie(request, name) {
     const separator = cookie.indexOf("=");
     if (separator < 0) continue;
     const key = cookie.slice(0, separator).trim();
-    if (key === name) return decodeURIComponent(cookie.slice(separator + 1).trim());
+    if (key === name) {
+      try {
+        return decodeURIComponent(cookie.slice(separator + 1).trim());
+      } catch {
+        return null;
+      }
+    }
   }
   return null;
 }
@@ -42,9 +52,10 @@ export function sessionCookie(token, maxAgeSeconds, secure = false) {
   return [
     `lumina_session=${encodeURIComponent(token)}`,
     "HttpOnly",
-    "SameSite=Lax",
+    "SameSite=Strict",
     "Path=/",
     `Max-Age=${maxAgeSeconds}`,
+    "Priority=High",
     secure ? "Secure" : "",
   ].filter(Boolean).join("; ");
 }
@@ -53,9 +64,10 @@ export function clearSessionCookie(secure = false) {
   return [
     "lumina_session=",
     "HttpOnly",
-    "SameSite=Lax",
+    "SameSite=Strict",
     "Path=/",
     "Max-Age=0",
+    "Priority=High",
     secure ? "Secure" : "",
   ].filter(Boolean).join("; ");
 }
